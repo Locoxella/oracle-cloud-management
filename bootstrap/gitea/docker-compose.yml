@@ -20,16 +20,6 @@ services:
       - "3000:3000"
       - "2222:22"
 
-  tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: aether-tunnel
-    restart: always
-    environment:
-      - TUNNEL_TOKEN=${CF_TUNNEL_TOKEN}
-    command: tunnel --no-autoupdate run
-    networks:
-      - gitea
-
 networks:
   gitea:
     external: false
