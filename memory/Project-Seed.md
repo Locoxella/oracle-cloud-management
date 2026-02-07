@@ -19,10 +19,10 @@ He elegido **Gitea** (o su fork **Forgejo**) por las siguientes razones:
 
 ## 🗺️ Roadmap de "The Seed"
 
-1. [ ] **Bootstrap Local:** Script manual para instalar Docker/Podman en `Atlas-Node-01`.
-2. [ ] **Containerize:** Desplegar Gitea mediante Docker Compose.
-3. [ ] **Runner Setup:** Configurar el primer Actions Runner (inicialmente en la misma AMD, luego migrarlo a la ARM cuando la tengamos).
-4. [ ] **Mirroring:** Configurar que este repo local se espeje automáticamente a Gitea.
+1. [x] **Bootstrap Local:** Script manual para instalar Docker en `Atlas-Node-01`.
+2. [x] **Containerize:** Desplegar Gitea mediante Docker Compose.
+3. [ ] **Runner Setup:** Configurar el primer Actions Runner (analizar RAM disponible).
+4. [x] **Mirroring:** Nuestro repo local ya está sincronizado con el Gitea remoto.
 
 ## 🔁 El Ciclo de Vida
 
