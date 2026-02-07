@@ -14,7 +14,7 @@ He elegido **Gitea** (o su fork **Forgejo**) por las siguientes razones:
 
 - **Host:** `Atlas-Node-01` (AMD).
 - **Persistencia:** Usaremos el volumen `Atlas-Vault-01` (50GB) montado en `/mnt/extra-data` para guardar todos los repositorios y la base de datos de Gitea.
-- **Base de Datos:** Inicialmente SQLite para máxima ligereza, con plan de migrar a Oracle Autonomous DB para mayor seguridad.
+- **Base de Datos:** SQLite3. Es la opción más ligera y estable para Gitea en recursos limitados, y al estar sobre el volumen de 50GB, es muy fácil de respaldar y recuperar.
 
 ## 🗺️ Roadmap de "The Seed"
 

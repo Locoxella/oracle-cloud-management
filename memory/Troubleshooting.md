@@ -18,6 +18,10 @@ This file documents the errors encountered while managing Oracle Cloud resources
 - **Correct:** `--target-os-username`
 - **Wrong:** `--ttl`
 - **Correct:** `--session-ttl` (Value in seconds).
+- **Wrong:** `--db-workload ATP`
+- **Correct:** `--db-workload OLTP` (in the `oci db autonomous-database create` command).
+- **Error:** Password muy corto.
+- **Dato:** El password de admin debe tener **al menos 12 caracteres**, incluyendo mayúsculas, minúsculas, números y símbolos.
 
 ## 3. Mandatory Plugin States
 

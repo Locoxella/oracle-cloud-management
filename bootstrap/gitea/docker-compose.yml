@@ -2,7 +2,7 @@ version: "3"
 
 services:
   server:
-    image: forgejo/forgejo:7
+    image: gitea/gitea:latest
     container_name: aether-git-seed
     restart: always
     environment:
