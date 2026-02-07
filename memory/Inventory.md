@@ -30,11 +30,14 @@ Estos recursos son "serverless" y muy seguros frente a la reclamación de Oracle
 | **Autonomous DB**  | 2 Instancias (20GB c/u) | **En uso** (`Aether-Seed-DB`, Always Free)          |
 | **NoSQL Database** | 133M reads/month        | **Libre**                                           |
 
+
 Detalles Autonomous DB:
+
 - Nombre: Aether-Seed-DB
 - DB Name: AETHERSEED
-- OCID: ocid1.autonomousdatabase.oc1.iad.anuwcljtinltkcaayloftj5rkjq4fvbk4vmdouez46xyxml6olu47mtxzab7a
+- OCID: `ocid1.autonomousdatabase.oc1.iad.anuwcljtinltkcaayloftj5rkjq4fvbk4vmdoez46xyxml6olu47mtxzab7a`
 - Region: us-ashburn-1
+- Wallet: Descargado en `./secrets/db_wallet` (Git-ignored)
 
 ## 4. Red y Otros
 
