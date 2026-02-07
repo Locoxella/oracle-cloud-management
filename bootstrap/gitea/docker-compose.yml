@@ -10,6 +10,7 @@ services:
       - USER_GID=1000
       - FORGEJO__database__DB_TYPE=sqlite3 # Inicialmente SQLite, luego migraremos a la Autonomous DB
       - FORGEJO__service__DISABLE_REGISTRATION=true # Solo para tu uso privado
+      - GITEA__server__ROOT_URL=https://git.solucionesaustral.com/
     networks:
       - gitea
     volumes:

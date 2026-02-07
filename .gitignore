@@ -7,3 +7,7 @@ node_modules/
 tmp/
 memory/scripts/amd_2_hunter.log
 memory/scripts/arm_hunter.log
+.cloudflare_token
+*.env
+secrets/
+.vault/
