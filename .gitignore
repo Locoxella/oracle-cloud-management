@@ -5,8 +5,6 @@
 node_modules/
 .DS_Store
 tmp/
-memory/scripts/amd_2_hunter.log
-memory/scripts/arm_hunter.log
 .cloudflare_token
 *.env
 secrets/
