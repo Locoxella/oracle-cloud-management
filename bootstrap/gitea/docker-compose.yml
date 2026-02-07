@@ -1,0 +1,25 @@
+version: "3"
+
+services:
+  server:
+    image: forgejo/forgejo:7
+    container_name: aether-git-seed
+    restart: always
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - FORGEJO__database__DB_TYPE=sqlite3 # Inicialmente SQLite, luego migraremos a la Autonomous DB
+      - FORGEJO__service__DISABLE_REGISTRATION=true # Solo para tu uso privado
+    networks:
+      - gitea
+    volumes:
+      - /mnt/extra-data/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "2222:22" # SSH para Git en el puerto 2222 del host
+
+networks:
+  gitea:
+    external: false
