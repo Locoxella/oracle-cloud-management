@@ -9,6 +9,7 @@ He elegido **Gitea** (o su fork **Forgejo**) por las siguientes razones:
 1. **Eficiencia:** Está escrito en Go y consume menos de 200MB de RAM. Es perfecto para una VM AMD Micro.
 2. **Gitea Actions:** Soporta un sistema de CI/CD compatible con la sintaxis de GitHub Actions.
 3. **Todo en uno:** Incluye registro de paquetes, gestión de releases y repositorio de código.
+4. **Acceso Seguro:** Uso de **Cloudflare Tunnel** para exponer el servicio vía HTTPS sin abrir puertos públicos en Oracle Cloud.
 
 ## 📍 Ubicación y Almacenamiento
 
