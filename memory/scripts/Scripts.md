@@ -9,7 +9,7 @@ This folder contains scripts designed to automate the process of "hunting" for O
 - **Purpose:** Attempts to provision an ARM-based Ampere A1 instance.
 - **Resources requested:**
   - Shape: `VM.Standard.A1.Flex`
-  - Config: 4 OCPUs, 24 GB RAM.
+  - Config: 2 OCPUs, 12 GB RAM.
 - **Behavior:**
   - Iterates through all three Availability Domains (ADs) in the US-Ashburn (IAD) region.
   - Retries ogni 60 secondi if capacity is unavailable (`OutOfCapacity`).

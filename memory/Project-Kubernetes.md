@@ -4,7 +4,7 @@ El objetivo es crear un cluster de Kubernetes ligero que se distribuya entre las
 
 ## Arquitectura Probable
 
-- **Control Plane (The Brain):** Se instalará en la VM **ARM** (4 cores / 24GB RAM) por su alta capacidad.
+- **Control Plane (The Brain):** Se instalará en la VM **ARM** (2 cores / 12GB RAM) por su alta capacidad.
 - **Worker Nodes:** Las 2 VMs **AMD Micro** actuarán como nodos de trabajo para microservicios livianos.
 - **Capa de Red:** Flannel o Calico sobre la VCN `Aether-Network`.
 - **Ingress:** Usaremos el **Flexible Load Balancer** gratuito de Oracle para recibir tráfico externo.

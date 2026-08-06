@@ -1,0 +1,14 @@
+# State and sensitive data
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfvars
+*.tfvars.json
+
+# Private keys
+*.pem
+
+# OCI specific
+.oci/
+secrets/
