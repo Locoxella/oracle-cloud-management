@@ -11,7 +11,7 @@ resource "oci_core_instance" "atlas_node_01" {
 
   create_vnic_details {
     subnet_id        = "ocid1.subnet.oc1.iad.aaaaaaaauuz6jqxlsduhikx37zo33zm5thxybhb2ppx7ltvulhfhq6ralzoa"
-    assign_public_ip = false
+    assign_public_ip = true
   }
 }
 
