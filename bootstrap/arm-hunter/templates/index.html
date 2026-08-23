@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARM Hunter - Oracle Cloud</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { background-color: #1e293b; border: 1px solid #334155; border-radius: 12px; }
+        .badge-running { background-color: #0284c7; color: white; }
+        .badge-success { background-color: #16a34a; color: white; }
+        .badge-stopped { background-color: #64748b; color: white; }
+        .badge-error { background-color: #dc2626; color: white; }
+        .terminal-box { background-color: #020617; border: 1px solid #1e293b; border-radius: 8px; font-family: 'Courier New', Courier, monospace; height: 320px; overflow-y: auto; color: #38bdf8; padding: 15px; font-size: 0.88rem; }
+        .stat-value { font-size: 2.2rem; font-weight: 700; color: #38bdf8; }
+        .stat-label { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    </style>
+</head>
+<body class="py-4">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold m-0">🏹 ARM Hunter Dashboard</h2>
+                <small class="text-muted">Cazador continuo de instancias Always Free ARM en Ashburn</small>
+            </div>
+            <div id="statusBadge" class="badge badge-stopped fs-6 px-3 py-2">DESCONECTADO</div>
+        </div>
+
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card p-3 text-center">
+                    <div class="stat-value" id="attemptCount">0</div>
+                    <div class="stat-label">Intentos Realizados</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 text-center">
+                    <div class="stat-value" id="currentAD">-</div>
+                    <div class="stat-label">AD Actual</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-3 text-center">
+                    <div class="stat-value" id="lastTime">-</div>
+                    <div class="stat-label">Último Intento</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-3 mb-4">
+            <h5 class="card-title mb-2">Estado del Proceso</h5>
+            <p class="card-text text-secondary" id="lastMsg">Inicializando conector...</p>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" onclick="control('start')">▶ Reanudar</button>
+                <button class="btn btn-outline-danger" onclick="control('stop')">⏹ Pausar</button>
+            </div>
+        </div>
+
+        <div class="card p-3">
+            <h5 class="card-title mb-3">Logs en Vivo</h5>
+            <div class="terminal-box" id="logBox">Cargando consola...</div>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus() {
+            fetch('/api/status')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('attemptCount').innerText = data.attempts;
+                    document.getElementById('currentAD').innerText = data.current_ad ? data.current_ad.split('-').pop() : '-';
+                    document.getElementById('lastTime').innerText = data.last_attempt_time || '-';
+                    document.getElementById('lastMsg').innerText = data.last_message;
+
+                    const badge = document.getElementById('statusBadge');
+                    badge.className = 'badge px-3 py-2 fs-6 ';
+                    if (data.status === 'RUNNING') {
+                        badge.classList.add('badge-running');
+                        badge.innerText = '⚡ CAZANDO';
+                    } else if (data.status === 'SUCCESS') {
+                        badge.classList.add('badge-success');
+                        badge.innerText = '🎉 ¡PROVISTA!';
+                    } else if (data.status === 'ERROR') {
+                        badge.classList.add('badge-error');
+                        badge.innerText = '❌ ERROR';
+                    } else {
+                        badge.classList.add('badge-stopped');
+                        badge.innerText = '⏸ PAUSADO';
+                    }
+
+                    const logBox = document.getElementById('logBox');
+                    logBox.innerHTML = data.logs.join('<br>');
+                    logBox.scrollTop = logBox.scrollHeight;
+                });
+        }
+
+        function control(action) {
+            fetch('/api/control/' + action, { method: 'POST' })
+                .then(() => updateStatus());
+        }
+
+        setInterval(updateStatus, 3000);
+        updateStatus();
+    </script>
+</body>
+</html>
