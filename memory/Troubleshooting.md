@@ -23,7 +23,30 @@ This file documents the errors encountered while managing Oracle Cloud resources
 - **Error:** Password muy corto.
 - **Dato:** El password de admin debe tener **al menos 12 caracteres**, incluyendo mayúsculas, minúsculas, números y símbolos.
 
-## 3. Mandatory Plugin States
+## 4. Cloudflare Distroless Containers & Healthchecks
 
-- **Issue:** Managed SSH sessions fail if the **Bastion plugin** is not in the `RUNNING` state inside the VM.
-- **Fix:** Use `oci compute instance update` with the `--agent-config` parameter to enable the plugin, and wait a few minutes for the Oracle Cloud Agent to start the service inside the OS.
+- **Issue / Symptom:** Cloudflare Tunnel (`cloudflared`) drops continuously with **Error 1033**.
+- **Root Cause:** The official `cloudflare/cloudflared` image is built on a minimal Distroless image (no `/bin/sh` or `/bin/bash`). If `docker-compose.yml` uses `CMD-SHELL` for its healthcheck, Docker fails to spawn shell (`stat /bin/sh: no such file or directory`), causing `autoheal` or Docker daemon to kill/restart the container continuously.
+- **Fix:** Use direct executable format (`CMD`) instead of `CMD-SHELL`:
+  ```yaml
+  healthcheck:
+    test: ["CMD", "cloudflared", "--version"]
+    interval: 30s
+    timeout: 10s
+    retries: 3
+  ```
+
+## 5. Maintenance of Gitea Actions Runner (`act_runner`)
+
+- **Issue:** Workflows fail with `Cannot find: node in PATH`.
+- **Root Cause:** By default, if `GITEA_RUNNER_LABELS` maps `self-hosted:host` or `ubuntu-latest:host`, jobs attempt to run on the host VM directly, where Node.js or required CLI binaries might be missing.
+- **Maintenance / Fix:** Always configure `gitea-runner` container with Docker socket access (`-v /var/run/docker.sock:/var/run/docker.sock`) and force all labels to use Node.js docker images:
+  ```bash
+  docker run -d --name gitea-runner --restart always \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -e GITEA_INSTANCE_URL=http://10.0.0.160:3000 \
+    -e GITEA_RUNNER_REGISTRATION_TOKEN=<TOKEN> \
+    -e GITEA_RUNNER_NAME=atlas-node-runner \
+    -e GITEA_RUNNER_LABELS="ubuntu-latest:docker://node:18-bullseye,ubuntu-22.04:docker://node:18-bullseye,self-hosted:docker://node:18-bullseye" \
+    gitea/act_runner:nightly
+  ```
