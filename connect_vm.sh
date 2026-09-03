@@ -73,7 +73,7 @@ sleep 10
 
 echo "[3/4] Levantando túnel local en segundo plano (puerto aleatorio $LOCAL_PORT)..."
 # Levantar túnel en background
-ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -i "$SSH_KEY_PRIV" -N -L "$LOCAL_PORT:$TARGET_IP:22" -p 22 "$SESSION_ID@host.bastion.us-ashburn-1.oci.oraclecloud.com" &
+ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY_PRIV" -N -L "$LOCAL_PORT:$TARGET_IP:22" -p 22 "$SESSION_ID@host.bastion.us-ashburn-1.oci.oraclecloud.com" &
 TUNNEL_PID=$!
 
 # Esperar unos segundos a que el túnel se establezca
@@ -84,9 +84,9 @@ echo "💡 Nota: Se están aplicando las opciones para aceptar llaves ssh-rsa (n
 
 # Conectar
 if [ $# -eq 0 ]; then
-    ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -i "$SSH_KEY_PRIV" -p "$LOCAL_PORT" ubuntu@127.0.0.1
+    ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY_PRIV" -p "$LOCAL_PORT" ubuntu@127.0.0.1
 else
-    ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -i "$SSH_KEY_PRIV" -p "$LOCAL_PORT" ubuntu@127.0.0.1 "$@"
+    ssh -n -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=10 -i "$SSH_KEY_PRIV" -p "$LOCAL_PORT" ubuntu@127.0.0.1 "$@"
 fi
 
 # Al salir del SSH, limpiar SOLO el túnel de esta ejecución

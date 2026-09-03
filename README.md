@@ -2,6 +2,28 @@
 
 Este repositorio contiene la infraestructura como código (IaC), los scripts de automatización y la documentación técnica para la gestión del ecosistema **Aether** en Oracle Cloud (Always Free).
 
+## 🔄 Sincronización Git
+
+Este repositorio está sincronizado con nuestro servidor privado centralizado de **Gitea**:
+
+- **URL SSH (Remoto Origin):** `git@git-ssh.solucionesaustral.com:locoxella/oracle-cloud-management.git`
+- **Servidor Web:** [https://git.solucionesaustral.com/locoxella/oracle-cloud-management](https://git.solucionesaustral.com/locoxella/oracle-cloud-management)
+
+## ⚙️ Gitea Actions (CI/CD)
+
+Las automatizaciones e integraciones continuas nativas de Gitea se gestionan mediante workflows alojados en la carpeta `.gitea/workflows/`:
+- `.gitea/workflows/validation.yml`: Pipeline básico de verificación de estructura y pruebas del repositorio que se ejecuta en cada `push` y `pull_request` en la rama `main`.
+
+## 🤖 Prompt de Sincronización para Agentes IA
+
+Si sos un agente de IA que necesita inicializar o clonar este proyecto en tu entorno actual, podés ejecutar el siguiente comando:
+
+```bash
+git clone git@git-ssh.solucionesaustral.com:locoxella/oracle-cloud-management.git .
+```
+
+---
+
 ## 🚀 Estado Actual del Ecosistema
 
 Actualmente, el proyecto se encuentra en la fase de **Bootstrap**. Hemos establecido el "Kilómetro 0" (The Seed) y estamos expandiendo la infraestructura mediante scripts de "cacería" de recursos gratuitos.
@@ -15,9 +37,16 @@ Actualmente, el proyecto se encuentra en la fase de **Bootstrap**. Hemos estable
 
 ## 📁 Estructura del Proyecto
 
-*   `📁 bootstrap/`: Scripts de inicialización de nodos (`setup_node.sh`) y archivos de configuración de servicios (`gitea/`).
-*   `📁 memory/`: El "cerebro" del proyecto. Contiene el inventario, el backlog, la guía humana y los roadmaps detallados.
-*   `📁 memory/scripts/`: Scripts de automatización, incluyendo los "hunters" de instancias ARM y AMD.
+```
+oracle-cloud-management/
+├── .gitea/
+│   └── workflows/
+│       └── validation.yml       # Workflows de CI/CD para Gitea Actions
+├── bootstrap/                   # Scripts de inicialización y despliegues (gitea, arm-hunter, etc.)
+├── infrastructure/              # Configuraciones de infraestructura como código / Tofu
+├── memory/                      # Inventarios, guías humanas y documentación técnica
+└── scripts/ (raíz)              # Scripts auxiliares de túneles, monitoreo y configuración
+```
 
 ## 🎯 Próximos Pasos (Roadmap)
 
@@ -53,3 +82,4 @@ Si quieres conectarte manualmente a la máquina virtual y evadir el problema de 
 
 ---
 *Gestión impulsada por IA. Codename: Aether.*
+

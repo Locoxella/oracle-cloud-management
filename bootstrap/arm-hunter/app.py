@@ -11,7 +11,7 @@ app = Flask(__name__)
 COMPARTMENT_ID = "ocid1.tenancy.oc1..aaaaaaaacdo7v2uzdflqej637btfq53aeztwpnk3epxz64e7int3pcy5dxwa"
 SUBNET_ID = "ocid1.subnet.oc1.iad.aaaaaaaauuz6jqxlsduhikx37zo33zm5thxybhb2ppx7ltvulhfhq6ralzoa"
 IMAGE_ID = "ocid1.image.oc1.iad.aaaaaaaaawgpyvs3zh7tu5343gpj45yqcj6hosrmrgvo5xovc7dvjwgi4vaq"
-SSH_KEY_PATH = os.environ.get("SSH_KEY_PATH", "/root/.ssh/id_rsa.pub")
+SSH_KEY_PATH = os.environ.get("SSH_KEY_PATH", os.path.expanduser("~/.ssh/id_rsa.pub"))
 ADS = ["nHMH:US-ASHBURN-AD-1", "nHMH:US-ASHBURN-AD-2", "nHMH:US-ASHBURN-AD-3"]
 
 # Global State

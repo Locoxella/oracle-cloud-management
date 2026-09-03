@@ -20,6 +20,14 @@ services:
     ports:
       - "3000:3000"
       - "2222:22"
+    labels:
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -30,13 +38,33 @@ services:
       - TUNNEL_TOKEN=eyJhIjogIjJhNDkyNzhkYjdiYTkyMDdjMDliZTlkMmMzZTk2NjlhIiwgInQiOiAiNTU3YjEyMGUtNTUzYi00MmY1LWJjNjUtZDJmZmI5ODAwZWE2IiwgInMiOiAiWUpmMDNFajdmejkwalNHTWRpQjNQeVJVcmhDaDQ1MkJ1OVFiOGJpdWFPUT0ifQ==
     networks:
       - gitea
+    labels:
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD-SHELL", "cloudflared tunnel info || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: aether-autoheal
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=15
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitea
 
   wg-easy:
     image: ghcr.io/wg-easy/wg-easy
     container_name: wg-easy
     environment:
       - WG_HOST=129.153.185.184
-      - PASSWORD_HASH=\$\$2a\$\$12\$\$kafGqn.IBOPR4GnJK0RNY.wy8LEKQMZvI4Yaqppps7BWVVJVEwWzO
+      - PASSWORD_HASH=$$2a$$12$$TWBhobzmIQkIfw/pxGpoteAPwLIxe834N3jjQzcZ2zdi9pmYpwxoC
     volumes:
       - /mnt/extra-data/wg-easy:/etc/wireguard
     ports:

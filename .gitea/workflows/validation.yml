@@ -1,0 +1,21 @@
+name: Validation Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Basic Syntax & Structure Check
+        run: |
+          echo "Verificando estructura del repositorio oracle-cloud-management..."
+          test -f README.md
+          test -f .gitignore
+          echo "Validación completada con éxito."

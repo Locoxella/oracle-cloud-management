@@ -1,0 +1,11 @@
+{
+  "title": { "en_us": "ARM Hunter" },
+  "icon": "https://raw.githubusercontent.com/oracle/oci-cli/master/docs/img/oracle-cloud-logo.png",
+  "tagline": { "en_us": "Always Free ARM VM Hunter" },
+  "description": { "en_us": "Automated 24/7 Always Free ARM instance hunter on Oracle Cloud Ashburn." },
+  "hostname": "raspberrypi.home",
+  "port": 5000,
+  "index": "/",
+  "protocol": "http",
+  "scheme": "http"
+}
