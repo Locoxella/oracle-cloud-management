@@ -12,21 +12,26 @@ CHAIN_NAME="GITEA_SSH_FILTER"
 PORT=2222
 
 # 1. Crear la cadena si no existe
-if ! iptables -N "$CHAIN_NAME" 2>/dev/null; then
-    # Insertar en DOCKER-USER (para reglas que van hacia contenedores Docker)
-    if iptables -L DOCKER-USER -n 2>/dev/null; then
-        iptables -I DOCKER-USER 1 -p tcp --dport "$PORT" -j "$CHAIN_NAME"
-    fi
-    # Insertar en INPUT (para conexiones al host)
-    iptables -I INPUT 1 -p tcp --dport "$PORT" -j "$CHAIN_NAME"
+if ! iptables -L "$CHAIN_NAME" -n 2>/dev/null; then
+    iptables -N "$CHAIN_NAME" 2>/dev/null || true
 fi
 
-# 2. Asegurar que la cadena siempre tenga la regla para WireGuard (10.8.0.0/24)
-if ! iptables -C "$CHAIN_NAME" -s 10.8.0.0/24 -p tcp --dport "$PORT" -j ACCEPT 2>/dev/null; then
-    iptables -I "$CHAIN_NAME" 1 -s 10.8.0.0/24 -p tcp --dport "$PORT" -j ACCEPT
+# 2. Asegurar que este enganchada en DOCKER-USER
+CONTAINER_IP=$(docker inspect aether-git-seed -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' 2>/dev/null || echo "172.18.0.5")
+
+if ! iptables -C DOCKER-USER -p tcp -d "$CONTAINER_IP" --dport 22 -j "$CHAIN_NAME" 2>/dev/null; then
+    iptables -I DOCKER-USER 1 -p tcp -d "$CONTAINER_IP" --dport 22 -j "$CHAIN_NAME"
+fi
+if ! iptables -C DOCKER-USER -j RETURN 2>/dev/null; then
+    iptables -A DOCKER-USER -j RETURN
 fi
 
-# 3. Resolver la IP actual de DDNS
+# 3. Asegurar regla WireGuard
+if ! iptables -C "$CHAIN_NAME" -s 10.8.0.0/24 -j ACCEPT 2>/dev/null; then
+    iptables -I "$CHAIN_NAME" 1 -s 10.8.0.0/24 -j ACCEPT
+fi
+
+# 4. Resolver la IP actual de DDNS
 CURRENT_IP=$(python3 -c "import socket; print(socket.gethostbyname('$DDNS_HOST'))" 2>/dev/null || true)
 
 STATE_FILE="/var/run/gitea_ddns_ip.state"
@@ -39,16 +44,16 @@ if [ -n "$CURRENT_IP" ]; then
     if [ "$CURRENT_IP" != "$PREV_IP" ]; then
         echo "[$(date)] DDNS cambió de '$PREV_IP' a '$CURRENT_IP'. Actualizando iptables..."
         if [ -n "$PREV_IP" ]; then
-            iptables -D "$CHAIN_NAME" -s "$PREV_IP" -p tcp --dport "$PORT" -j ACCEPT 2>/dev/null || true
+            iptables -D "$CHAIN_NAME" -s "$PREV_IP" -j ACCEPT 2>/dev/null || true
         fi
-        iptables -I "$CHAIN_NAME" 1 -s "$CURRENT_IP" -p tcp --dport "$PORT" -j ACCEPT
+        iptables -I "$CHAIN_NAME" 1 -s "$CURRENT_IP" -j ACCEPT
         echo "$CURRENT_IP" > "$STATE_FILE"
     fi
 else
     echo "[$(date)] Advertencia: No se pudo resolver $DDNS_HOST"
 fi
 
-# 4. Asegurar que la regla por defecto en la cadena sea DROP
-if ! iptables -C "$CHAIN_NAME" -p tcp --dport "$PORT" -j DROP 2>/dev/null; then
-    iptables -A "$CHAIN_NAME" -p tcp --dport "$PORT" -j DROP
+# 5. Asegurar DROP por defecto
+if ! iptables -C "$CHAIN_NAME" -j DROP 2>/dev/null; then
+    iptables -A "$CHAIN_NAME" -j DROP
 fi
