@@ -51,9 +51,47 @@ else
     echo "⚠️ ADVERTENCIA: No se encontró el dispositivo $DEVICE. Saltando configuración de disco."
 fi
 
-# 4. Estructura de carpetas para Gitea
-echo "📂 Creando estructura de carpetas..."
+# 4. Estructura de carpetas para Dockge y Stacks
+echo "📂 Creando estructura de carpetas para Stacks y Dockge..."
 mkdir -p "$MOUNT_POINT/gitea"
+mkdir -p "$MOUNT_POINT/dockge/data"
+mkdir -p "$MOUNT_POINT/stacks/gitea"
+mkdir -p "$MOUNT_POINT/stacks/subastas"
+
+# 5. Configurar Sincronización Dinámica de Firewall para Gitea SSH (DDNS + WireGuard)
+echo "🛡️ Configurando sincronización dinámica de Firewall para Gitea SSH..."
+sudo cp "$(dirname "$0")/scripts/update_gitea_firewall.sh" /usr/local/bin/update_gitea_firewall.sh
+sudo chmod +x /usr/local/bin/update_gitea_firewall.sh
+
+cat << 'EOF' | sudo tee /etc/systemd/system/gitea-firewall-sync.service
+[Unit]
+Description=Sync Gitea SSH Firewall with DDNS & WireGuard
+After=network-online.target docker.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/update_gitea_firewall.sh
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << 'EOF' | sudo tee /etc/systemd/system/gitea-firewall-sync.timer
+[Unit]
+Description=Run Gitea SSH Firewall sync every 5 minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=timers.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now gitea-firewall-sync.timer
+sudo /usr/local/bin/update_gitea_firewall.sh || true
 
 echo "✨ Bootstrap completado con éxito."
 echo "💡 NOTA: Es posible que necesites cerrar sesión y volver a entrar para que los permisos de Docker surtan efecto."
