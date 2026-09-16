@@ -8,8 +8,8 @@ services:
     environment:
       - USER_UID=1000
       - USER_GID=1000
-      - FORGEJO__database__DB_TYPE=sqlite3 # Inicialmente SQLite, luego migraremos a la Autonomous DB
-      - FORGEJO__service__DISABLE_REGISTRATION=true # Solo para tu uso privado
+      - GITEA__database__DB_TYPE=sqlite3 # Inicialmente SQLite, luego migraremos a la Autonomous DB
+      - GITEA__service__DISABLE_REGISTRATION=true # Solo para tu uso privado
       - GITEA__server__ROOT_URL=https://git.solucionesaustral.com/
     networks:
       - gitea
@@ -41,7 +41,7 @@ services:
     labels:
       - "autoheal=true"
     healthcheck:
-      test: ["CMD-SHELL", "cloudflared tunnel info || exit 1"]
+      test: ["CMD", "cloudflared", "--version"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -56,6 +56,22 @@ services:
       - AUTOHEAL_INTERVAL=15
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitea
+
+  dockge:
+    image: louislam/dockge:1
+    container_name: aether-dockge
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5001:5001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/extra-data/dockge/data:/app/data
+      - /mnt/extra-data/stacks:/mnt/extra-data/stacks
+      - /mnt/extra-data/gitea:/mnt/extra-data/stacks/infra
+    environment:
+      - DOCKGE_STACKS_DIR=/mnt/extra-data/stacks
     networks:
       - gitea
 
