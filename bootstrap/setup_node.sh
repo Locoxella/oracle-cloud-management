@@ -51,12 +51,17 @@ else
     echo "⚠️ ADVERTENCIA: No se encontró el dispositivo $DEVICE. Saltando configuración de disco."
 fi
 
-# 4. Estructura de carpetas para Dockge y Stacks
+# 4. Estructura de carpetas para Stacks y Red Docker compartida
 echo "📂 Creando estructura de carpetas para Stacks y Dockge..."
 mkdir -p "$MOUNT_POINT/gitea"
 mkdir -p "$MOUNT_POINT/dockge/data"
-mkdir -p "$MOUNT_POINT/stacks/gitea"
+mkdir -p "$MOUNT_POINT/stacks/management"
+mkdir -p "$MOUNT_POINT/stacks/network"
+mkdir -p "$MOUNT_POINT/stacks/git"
 mkdir -p "$MOUNT_POINT/stacks/subastas"
+
+# Crear red Docker compartida externa
+sudo docker network create aether-net 2>/dev/null || true
 
 # 5. Configurar Sincronización Dinámica de Firewall para Gitea SSH (DDNS + WireGuard)
 echo "🛡️ Configurando sincronización dinámica de Firewall para Gitea SSH..."
