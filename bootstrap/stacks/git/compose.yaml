@@ -1,0 +1,32 @@
+services:
+  server:
+    image: gitea/gitea:latest
+    container_name: aether-git-seed
+    restart: always
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__service__DISABLE_REGISTRATION=true
+      - GITEA__server__ROOT_URL=https://git.solucionesaustral.com/
+    networks:
+      - aether-net
+    volumes:
+      - /mnt/extra-data/gitea:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "3000:3000"
+      - "2222:22"
+    labels:
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  aether-net:
+    external: true

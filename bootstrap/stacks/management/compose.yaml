@@ -1,0 +1,31 @@
+services:
+  dockge:
+    image: louislam/dockge:1
+    container_name: aether-dockge
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5001:5001"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt/extra-data/dockge/data:/app/data
+      - /mnt/extra-data/stacks:/mnt/extra-data/stacks
+    environment:
+      - DOCKGE_STACKS_DIR=/mnt/extra-data/stacks
+    networks:
+      - aether-net
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: aether-autoheal
+    restart: always
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=15
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - aether-net
+
+networks:
+  aether-net:
+    external: true
