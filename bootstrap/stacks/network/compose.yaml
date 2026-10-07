@@ -22,7 +22,7 @@ services:
     container_name: wg-easy
     environment:
       - WG_HOST=129.153.185.184
-      - PASSWORD_HASH=$$2a$$12$$TWBhobzmIQkIfw/pxGpoteAPwLIxe834N3jjQzcZ2zdi9pmYpwxoC
+      - PASSWORD_HASH=$$2a$$12$$6ferbnHikJ.lh75hD0sGeO5mBki0AY.BKziHaw4ZNqX7re7BcnHfm
     volumes:
       - /mnt/extra-data/wg-easy:/etc/wireguard
     ports:
