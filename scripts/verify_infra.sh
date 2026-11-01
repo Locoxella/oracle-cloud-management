@@ -126,10 +126,6 @@ if [[ "$LIVE_MODE" != "true" ]]; then
     echo -e "$REPORT"
     echo "================================================================================"
 
-    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]] && [[ -w "$GITHUB_STEP_SUMMARY" ]]; then
-        echo -e "$REPORT" >> "$GITHUB_STEP_SUMMARY"
-    fi
-
     if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
         echo "::notice title=Dry-Run Validation Passed::All security, script syntax, YAML schema, and OpenTofu IaC checks verified cleanly."
     fi
@@ -137,6 +133,7 @@ if [[ "$LIVE_MODE" != "true" ]]; then
     echo "ℹ️  Dry-Run complete. Pass '--live' to execute empirical post-apply checks."
     exit 0
 fi
+
 
 check_http() {
     local url="$1"
