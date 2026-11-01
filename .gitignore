@@ -336,3 +336,7 @@ infrastructure/*.json
 infrastructure/plan.tfplan
 infrastructure/plan_output.txt
 infrastructure/import_log.txt
+
+# VS Code workspaces and local developer artifacts
+*.code-workspace
+
