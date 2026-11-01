@@ -4,7 +4,9 @@ from cf_common import ACCOUNT_ID, get_headers
 
 HEADERS = get_headers()
 
-CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "REDACTED_GOOGLE_CLIENT_ID")
+CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+if not CLIENT_ID:
+    raise RuntimeError("Missing GOOGLE_CLIENT_ID environment variable.")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 if not CLIENT_SECRET:
     raise RuntimeError("Missing GOOGLE_CLIENT_SECRET environment variable.")
