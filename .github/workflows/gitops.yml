@@ -164,13 +164,6 @@ jobs:
               --force
           fi
 
-      - name: Mirror Repository to Private Gitea Instance
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -p 2222 git-ssh.solucionesaustral.com >> ~/.ssh/known_hosts 2>/dev/null || true
-          git remote add gitea ssh://git@git-ssh.solucionesaustral.com:2222/locoxella/oracle-cloud-management.git || true
-          git push gitea main --force || echo "Warning: Private Gitea sync failed"
-
       - name: Publish Visual GitOps Dashboard Summary
         if: always()
         run: |
@@ -196,7 +189,7 @@ jobs:
           ### 🛡️ Security & Lifecycle Integrity
           - **Ephemeral Bastion Bridge:** Dynamic port-forwarding sessions were created and cleanly torn down with traps upon completion. Zero public SSH ports remain open.
           - **OpenTofu State Persistence:** Persisted in OCI Object Storage bucket \`Aether-Infra-State\` (Namespace: \`idsbz3qyzayx\`).
-          - **Automated Gitea Mirror:** Succeeded. Changes pushed to GitHub were automatically synchronized to the private Gitea instance."
+          - **Private Gitea Sync:** Managed autonomously via Gitea scheduled pull/mirror workflow."
 
           # 1. Workflow Command Notice (pinned prominently at the top of the Job UI)
           echo "::notice title=GitOps Deployment & Verification Succeeded::All OCI nodes converged via ephemeral Bastion and Zero-Trust endpoints verified."

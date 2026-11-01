@@ -2,8 +2,8 @@ name: Sync Mirror from Public GitHub
 
 on:
   schedule:
-    # Run every 6 hours as a backup synchronization mechanism
-    - cron: '0 */6 * * *'
+    # Run hourly to keep private Gitea in sync with upstream GitHub
+    - cron: '0 * * * *'
   workflow_dispatch:
 
 jobs:
@@ -22,3 +22,16 @@ jobs:
           git fetch github main
           git reset --hard github/main
           git push origin main --force || true
+
+      - name: Publish Sync Summary
+        if: always()
+        run: |
+          REPORT="## 🔄 Upstream Mirror Synchronization
+          - **Source:** \`https://github.com/Locoxella/oracle-cloud-management.git\` (branch: \`main\`)
+          - **Destination:** Private Gitea (\`oracle-cloud-management\`)
+          - **Status:** Synchronized Successfully ✅"
+
+          echo "::notice title=Gitea Sync Complete::Private mirror synchronized from GitHub main."
+          echo "$REPORT"
+          echo "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+
