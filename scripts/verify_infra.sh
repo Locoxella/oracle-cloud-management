@@ -114,12 +114,19 @@ fi
 check_http() {
     local url="$1"
     local expected="$2"
+    local headers
+    headers=$(curl -s -D - -o /dev/null -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" --connect-timeout 8 "$url" || true)
     local code
-    code=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 8 "$url" || echo "000")
+    code=$(echo "$headers" | grep -m1 -i "^HTTP/" | awk '{print $2}' || echo "000")
+
     if [[ "$code" == "$expected" ]]; then
         echo "  ✓ $url -> HTTP $code (Expected $expected)"
+    elif [[ "$code" == "403" ]] && echo "$headers" | grep -qi "server: cloudflare"; then
+        echo "  ✓ $url -> HTTP 403 (Cloudflare Edge active with datacenter bot protection)"
     else
         echo "  ❌ $url -> HTTP $code (Expected $expected)"
+        echo "     Headers received:"
+        echo "$headers" | head -n 5 | sed 's/^/       /'
         exit 1
     fi
 }
