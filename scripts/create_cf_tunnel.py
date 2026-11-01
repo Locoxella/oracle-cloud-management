@@ -2,15 +2,10 @@ import requests
 import json
 import base64
 import os
+from cf_common import ACCOUNT_ID, get_headers
 
-TOKEN = open('.cloudflare_token').read().strip()
-ACCOUNT_ID = '2a49278db7ba9207c09be9d2c3e9669a'
-ZONE_ID = '6904c05ddc4a10898d60f7bf50e86938'
-
-headers = {
-    'Authorization': f'Bearer {TOKEN}',
-    'Content-Type': 'application/json'
-}
+ZONE_ID = os.getenv("CLOUDFLARE_ZONE_ID", "6904c05ddc4a10898d60f7bf50e86938")
+headers = get_headers()
 
 # 1. Create Tunnel Secret (32 bytes base64)
 secret_bytes = os.urandom(32)

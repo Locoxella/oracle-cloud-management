@@ -1,0 +1,27 @@
+---
+# Post-Apply Empirical Verification Playbook
+- name: Verify OCI Compute Nodes Health & Running Containers
+  hosts: oci_nodes
+  become: false
+  tasks:
+    - name: Collect running Docker container names
+      ansible.builtin.command: docker ps --format '{{ '{{' }}.Names{{ '}}' }}'
+      register: running_containers
+      changed_when: false
+
+    - name: Assert all expected containers are running on {{ inventory_hostname }}
+      ansible.builtin.assert:
+        that:
+          - item in running_containers.stdout_lines
+        fail_msg: "Container '{{ item }}' is NOT running on {{ inventory_hostname }}!"
+        success_msg: "Container '{{ item }}' is running on {{ inventory_hostname }}."
+      loop: "{{ expected_containers }}"
+
+- name: Verify Homelab Raspberry Pi Health
+  hosts: raspberry_pi
+  become: false
+  tasks:
+    - name: Assert core homelab daemons are active
+      ansible.builtin.command: "systemctl is-active {{ item }}"
+      changed_when: false
+      loop: "{{ expected_services }}"

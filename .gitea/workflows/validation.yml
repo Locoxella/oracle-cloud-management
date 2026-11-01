@@ -10,13 +10,14 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Basic Syntax & Structure Check
+      - name: Install PyYAML if needed
         run: |
-          echo "Verificando estructura del repositorio oracle-cloud-management..."
-          test -f README.md
-          test -f .gitignore
-          echo "Validación completada con éxito."
+          python3 -c "import yaml" 2>/dev/null || pip3 install --break-system-packages pyyaml || pip3 install pyyaml || true
+
+      - name: Run Unified Pre-Flight & Dry-Run Suite
+        run: |
+          chmod +x scripts/verify_infra.sh
+          ./scripts/verify_infra.sh

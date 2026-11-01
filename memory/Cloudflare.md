@@ -1,40 +1,34 @@
 # ☁️ Cloudflare & Cloudflare Tunnel (`cloudflared`) Integration
 
-Este documento registra la configuración, autenticación y gestión del CLI de Cloudflare (`cloudflared`) en el proyecto Aether.
+Este documento registra la arquitectura, túneles de alta disponibilidad (HA) y políticas de Zero Trust para el dominio `solucionesaustral.com` (verificado empíricamente contra la API v4 de Cloudflare el 2026-11-01).
 
-## 🛠️ Instalación de `cloudflared`
-- **Ubicación del ejecutable:** `/home/locoxella/.local/bin/cloudflared` (en el `$PATH` del sistema)
-- **Versión:** `2026.7.3`
-- **Fuente original RPM:** `/home/locoxella/Downloads/cloudflared-linux-x86_64.rpm`
+## 🏛️ Topología de Túneles y Alta Disponibilidad (HA)
+
+1. **`aether-tunnel` (`557b120e-553b-42f5-bc65-d2ffb9800ea6`):**
+   - **Estado:** `HEALTHY` (8 conexiones activas al borde de Cloudflare).
+   - **Modo HA en OCI:** Dos réplicas conectadas simultáneamente al mismo túnel dentro de la VCN `10.0.0.0/24`:
+     - `aether-tunnel` en `Atlas-Node-01` (AMD `10.0.0.160`) — 4 conexiones.
+     - `aether-tunnel-arm` en `AlwaysFree-Ubuntu-ARM` (ARM `10.0.0.200`) — 4 conexiones.
+   - Si cualquiera de los contenedores de túnel en OCI se reinicia, el otro nodo enruta el tráfico interno hacia `10.0.0.160` o `10.0.0.200` sin caída de servicio.
+
+2. **`pi-home-tunnel` (`63795e0e-ef77-4758-aa7a-9b75611b5d2c`):**
+   - **Estado:** `HEALTHY` (4 conexiones activas al borde).
+   - **Nodo Homelab:** `aether-tunnel-pi` ejecutándose en el **Raspberry Pi 4 (`10.0.0.75`)**.
+
+## 🌐 Catálogo de Servicios e Ingress Verificado
+
+| Servicio | Hostname Público | Destino Interno | Túnel / Modo | Seguridad / Acceso |
+| :--- | :--- | :--- | :--- | :--- |
+| **Gitea Web** | `git.solucionesaustral.com` | `http://10.0.0.200:3000` | `aether-tunnel` | Público (HTTPS Cloudflare) |
+| **Gitea SSH** | `git-ssh.solucionesaustral.com` | `129.213.96.28:2222` | DNS / SSH Directo | Llave SSH + Firewall DDNS |
+| **Subastas** | `subastas.solucionesaustral.com` | `http://10.0.0.160:8000` | `aether-tunnel` | Público (SPA + API) |
+| **Dockge (Principal)** | `dockge.solucionesaustral.com` | `http://10.0.0.160:5001` | `aether-tunnel` | Cloudflare Zero Trust Access |
+| **Dockge (AMD)** | `dockge-amd.solucionesaustral.com` | `http://10.0.0.160:5001` | `aether-tunnel` | Cloudflare Zero Trust Access |
+| **Dockge (ARM)** | `dockge-arm.solucionesaustral.com` | `http://10.0.0.200:5001` | `aether-tunnel` | Cloudflare Zero Trust Access |
+| **Dockge (Pi)** | `dockge-pi.solucionesaustral.com` | `http://localhost:5001` | `pi-home-tunnel` | Cloudflare Zero Trust Access |
+| **WireGuard Easy** | `wg.solucionesaustral.com` | `http://10.0.0.160:51821` | `aether-tunnel` | Cloudflare Zero Trust Access |
 
 ## 🔑 Autenticación & API Token
-- El token de API de Cloudflare se encuentra en [.cloudflare_token](file:///home/locoxella/repos/oracle-cloud-management/.cloudflare_token).
-- **Zona activa:** `solucionesaustral.com` (Zone ID: `6904c05ddc4a10898d60f7bf50e86938`)
-
-## 🌐 Configuración de Servicios
-- **`git.solucionesaustral.com`**:
-  - Tipo: `A` record -> `129.80.43.192` (Oracle Load Balancer)
-  - Estado: **Proxied (Nube Naranja 🟧)**
-  - SSL/TLS: Gestionado automáticamente por Cloudflare (Google Trust Services).
-
-## 🚀 Comandos Útiles con `cloudflared`
-
-### Ver versión e información
-```bash
-cloudflared --version
-```
-
-### Autenticar con cuenta de Cloudflare
-```bash
-cloudflared tunnel login
-```
-
-### Crear un nuevo Túnel de Cloudflare
-```bash
-cloudflared tunnel create <tunnel-name>
-```
-
-### Ejecutar un túnel mapeado a un servicio local
-```bash
-cloudflared tunnel run --url http://localhost:3000 <tunnel-name>
-```
+- El token local se almacena en `.cloudflare_token` (excluido por `.gitignore`).
+- **Account ID:** `2a49278db7ba9207c09be9d2c3e9669a`
+- **Zone ID (`solucionesaustral.com`):** `6904c05ddc4a10898d60f7bf50e86938`

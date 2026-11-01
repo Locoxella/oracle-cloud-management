@@ -1,30 +1,26 @@
 # 📋 Backlog & Status
 
-Registro de iniciativas y su estado actual.
+Registro de iniciativas y su estado actual (actualizado empíricamente contra OCI API).
 
 ## 🚀 En Ejecución (In-Progress)
 
-- **[Hunt] Catch ARM Instance:** Pausados tras timeouts. (En espera de re-lanzamiento con monitoreo).
-- **[Hunt] Catch 2nd AMD Instance:** Pausados.
-- **[Infra] Hardening:** SSH del Balanceador abierto (Puerto 22), acceso a la VM solo vía Bastion.
+- **[Infra] Cluster Kubernetes (K3s):** Diseño de red interna y despliegue del Server K3s en `AlwaysFree-Ubuntu-ARM`.
+- **[Infra] Hardening:** Acceso SSH exclusivo vía OCI Bastion (`connect_vm.sh`) y Cloudflare Zero Trust.
 
 ## 📅 Próximos Pasos (To-Do)
 
-- [ ] **Gitea Actions:** Configurar el primer runner para automatización GitOps (analizar impacto en RAM de la AMD).
-- [ ] **Bootstrap:** Crear el primer Playbook de Ansible para configurar `Atlas-Node-01`.
-- [x] **Database Connectivity:** Wallet de la `Aether-Seed-DB` descargado y listo en `./secrets/db_wallet`.
-- [ ] **Database Migration (Gitea):** Analizar uso de la DB para Gitea (Recordatorio: Gitea no tiene driver nativo para Oracle DB, evaluar si migramos a Postgres en VM o usamos la DB para otros servicios).
+- [ ] **Database Evaluation:** Evaluar provisionamiento de una nueva DB Always Free (la `Aether-Seed-DB` ya no existe; causa no determinada).
 - [ ] **Grafana:** Configurar el conector de OCI Monitoring para ver métricas de CPU/RAM.
-- [ ] **Kubernetes:** Iniciar el diseño de redes internas para K3s.
+- [ ] **Kubernetes:** Desplegar K3s Server en el nodo ARM y unir el nodo AMD como Worker.
 
 ## ✅ Completado
 
+- **[Hunt] Catch ARM Instance:** Instancia `AlwaysFree-Ubuntu-ARM` cazada y activa desde 06/10/2026 (2 OCPUs / 12 GB RAM).
+- **[CI/CD] Gitea Actions Runner:** Runner `gitea-runner` configurado y operativo en el nodo ARM.
+- **[Seed] Gitea Migración a ARM:** Servidor Git migrado a la instancia ARM para aprovechar los 12GB de RAM.
+- **[VPN] WireGuard Easy:** Servidor VPN activo en `Atlas-Node-01` con IP de EE.UU.
+- **[Security] Bastion Automation:** Script `connect_vm.sh` con selección automática de nodo AMD/ARM y cleanup con traps.
 - Creación de VCN y Subnets.
-- Creación de Bastion.
+- Creación de Bastion (`locoxella-bastion`).
 - Setup de Memoria y documentación en Repo.
-- Conexión de Almacenamiento Extra (50GB).
-- **[Seed] Gitea Deploy:** Servidor Git activo en `git.solucionesaustral.com`.
-- **[Seed] SSH Connectivity:** Acceso Git-over-SSH configurado vía Load Balancer.
-- **[Seed] First Push:** El repo principal ya está versionado en la infraestructura propia.
-- **[Infra] DB Provisioning:** Autonomous DB `Aether-Seed-DB` creada exitosamente.
-- **[Infra] Wallet Management:** Wallet descargado y password generado localmente.
+- Conexión de Almacenamiento Extra (50GB - `Atlas-Vault-01`).

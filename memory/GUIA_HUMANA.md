@@ -2,9 +2,33 @@
 
 Esta es la guía simplificada para acceder a tus nodos en Oracle Cloud sin complicaciones técnicas innecesarias.
 
-## 🚀 Cómo entrar a tu VM (Atlas-Node-01)
+## 🚀 Método Recomendado: Un Solo Comando (Automatizado)
 
-Como el puerto SSH está cerrado por seguridad, debes usar el "Bastion" como puente.
+El repositorio incluye un script que crea la sesión en OCI Bastion, gestiona los puertos aleatorios, abre el túnel y limpia todo automáticamente al salir:
+
+### Conectar a Atlas-Node-01 (AMD):
+```bash
+./connect_vm.sh
+# o explícitamente:
+./connect_vm.sh amd
+```
+
+### Conectar a AlwaysFree-Ubuntu-ARM (ARM):
+```bash
+./connect_vm.sh arm
+```
+
+### Ejecutar un comando remoto directo sin abrir sesión interactiva:
+```bash
+./connect_vm.sh "docker ps"
+./connect_vm.sh arm "uptime"
+```
+
+---
+
+## 🛠️ Método Manual (Paso a Paso con OCI CLI)
+
+Si por alguna razón necesitas gestionar la sesión manualmente:
 
 ### Paso 1: Crear la Sesión (Solo una vez cada 3 horas)
 

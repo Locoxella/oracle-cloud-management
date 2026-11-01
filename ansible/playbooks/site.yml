@@ -1,0 +1,76 @@
+---
+# Main GitOps Convergence Playbook (Supports --check --diff for Dry-Run)
+- name: Converge OCI ARM Node (AlwaysFree-Ubuntu-ARM)
+  hosts: atlas_arm
+  become: true
+  tasks:
+    - name: Ensure base stack directories exist on ARM node
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /opt/stacks/gitea
+        - /opt/stacks/git-runner
+        - /opt/stacks/management
+        - /opt/stacks/network
+
+    - name: Synchronize Gitea & Runner Compose stack definition
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../bootstrap/stacks/git/compose.yaml"
+        dest: /opt/stacks/gitea/compose.reference.yaml
+        mode: "0644"
+
+- name: Converge OCI AMD Node (Atlas-Node-01)
+  hosts: atlas_amd
+  become: true
+  tasks:
+    - name: Verify persistent block volume (/mnt/extra-data) is mounted
+      ansible.builtin.command: mountpoint -q /mnt/extra-data
+      changed_when: false
+
+    - name: Ensure stack and infrastructure directories exist on AMD node
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /mnt/extra-data/infrastructure/management
+        - /mnt/extra-data/stacks/network
+        - /mnt/extra-data/stacks/subastas
+
+    - name: Ensure obsolete Gitea directory on AMD remains absent
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /mnt/extra-data/gitea
+        - /mnt/extra-data/stacks/infra
+        - /mnt/extra-data/stacks_archived
+
+    - name: Synchronize Management Compose stack on AMD
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../bootstrap/infrastructure/management/compose.yaml"
+        dest: /mnt/extra-data/infrastructure/management/compose.yaml
+        mode: "0644"
+
+    - name: Synchronize Subastas Compose stack on AMD
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../bootstrap/stacks/subastas/compose.yaml"
+        dest: /mnt/extra-data/stacks/subastas/compose.yaml
+        mode: "0644"
+
+    - name: Ensure dynamic Gitea SSH firewall sync timer is enabled and active
+      ansible.builtin.systemd:
+        name: gitea-firewall-sync.timer
+        enabled: true
+        state: started
+
+- name: Converge Homelab Raspberry Pi 4 Node
+  hosts: raspberry_pi
+  become: false
+  tasks:
+    - name: Verify core systemd services are active on Raspberry Pi
+      ansible.builtin.command: "systemctl is-active {{ item }}"
+      changed_when: false
+      loop: "{{ expected_services }}"

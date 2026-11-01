@@ -13,16 +13,17 @@ He elegido **Gitea** (o su fork **Forgejo**) por las siguientes razones:
 
 ## 📍 Ubicación y Almacenamiento
 
-- **Host:** `Atlas-Node-01` (AMD).
-- **Persistencia:** Usaremos el volumen `Atlas-Vault-01` (50GB) montado en `/mnt/extra-data` para guardar todos los repositorios y la base de datos de Gitea.
-- **Base de Datos:** SQLite3. Es la opción más ligera y estable para Gitea en recursos limitados, y al estar sobre el volumen de 50GB, es muy fácil de respaldar y recuperar.
+- **Host Actual:** `AlwaysFree-Ubuntu-ARM` (ARM - 12GB RAM).
+- **Persistencia:** Almacenamiento local en `/opt/stacks/gitea/data`.
+- **Base de Datos:** SQLite3 (ligera y estable).
+- **Exposición:** Cloudflare Tunnel (`aether-tunnel-arm`) para HTTPS seguro sin puertos públicos.
 
 ## 🗺️ Roadmap de "The Seed"
 
-1. [x] **Bootstrap Local:** Script manual para instalar Docker en `Atlas-Node-01`.
+1. [x] **Bootstrap Base:** Docker y dependencias instaladas en ambos nodos.
 2. [x] **Containerize:** Desplegar Gitea mediante Docker Compose.
-3. [ ] **Runner Setup:** Configurar el primer Actions Runner (analizar RAM disponible).
-4. [x] **Mirroring:** Nuestro repo local ya está sincronizado con el Gitea remoto.
+3. [x] **Runner Setup:** Configurar el runner de Gitea Actions (`gitea-runner`) con socket de Docker en el nodo ARM.
+4. [x] **Mirroring & CI:** Repositorio sincronizado y pipeline de validación activo en cada push.
 
 ## 🔁 El Ciclo de Vida
 

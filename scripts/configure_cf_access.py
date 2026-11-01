@@ -1,11 +1,7 @@
 import requests
+from cf_common import ACCOUNT_ID, get_headers
 
-TOKEN = "REDACTED_CLOUDFLARE_API_TOKEN"
-ACCOUNT_ID = "2a49278db7ba9207c09be9d2c3e9669a"
-HEADERS = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
-}
+HEADERS = get_headers()
 
 # 1. Check if app already exists
 print("🔍 Checking existing Access Applications...")

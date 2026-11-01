@@ -55,7 +55,7 @@ fi
 echo "📂 Creando estructura de carpetas para Stacks y Dockge..."
 mkdir -p "$MOUNT_POINT/gitea"
 mkdir -p "$MOUNT_POINT/dockge/data"
-mkdir -p "$MOUNT_POINT/stacks/management"
+mkdir -p "$MOUNT_POINT/infrastructure/management"
 mkdir -p "$MOUNT_POINT/stacks/network"
 mkdir -p "$MOUNT_POINT/stacks/git"
 mkdir -p "$MOUNT_POINT/stacks/subastas"

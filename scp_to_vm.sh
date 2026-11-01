@@ -1,11 +1,29 @@
 #!/bin/bash
 set -e
 
-BASTION_ID="ocid1.bastion.oc1.iad.amaaaaaainltkcaaor463mvd7hxxcyqxpsmnhn3ptr5rdh7h5pvqesqekyma"
-INSTANCE_ID="ocid1.instance.oc1.iad.anuwcljtinltkcac5f3wz76gl4vpx7g6mp3lf2ofwjsjcbuoxqz4vine2wlq"
-SSH_KEY_PUB="/home/locoxella/.ssh/id_rsa.pub"
-SSH_KEY_PRIV="/home/locoxella/.ssh/id_rsa"
-TARGET_IP="10.0.0.160"
+BASTION_ID="${BASTION_ID:-ocid1.bastion.oc1.iad.amaaaaaainltkcaaor463mvd7hxxcyqxpsmnhn3ptr5rdh7h5pvqesqekyma}"
+INSTANCE_ID="${INSTANCE_ID:-ocid1.instance.oc1.iad.anuwcljtinltkcac5f3wz76gl4vpx7g6mp3lf2ofwjsjcbuoxqz4vine2wlq}"
+SSH_KEY_PUB="${SSH_KEY_PUB:-$HOME/.ssh/id_rsa.pub}"
+SSH_KEY_PRIV="${SSH_KEY_PRIV:-$HOME/.ssh/id_rsa}"
+TARGET_IP="${TARGET_IP:-10.0.0.160}"
+
+TUNNEL_PID=""
+SESSION_ID=""
+
+cleanup() {
+    local exit_code=$?
+    trap - EXIT INT TERM
+    echo ""
+    echo "👋 Limpiando..."
+    if [ -n "$TUNNEL_PID" ]; then
+        kill "$TUNNEL_PID" 2>/dev/null || true
+    fi
+    if [ -n "$SESSION_ID" ] && [ "$SESSION_ID" != "null" ]; then
+        oci bastion session delete --session-id "$SESSION_ID" --force >/dev/null 2>&1 || true
+    fi
+    exit "$exit_code"
+}
+trap cleanup EXIT INT TERM
 
 SRC="$1"
 DEST="$2"
@@ -54,7 +72,5 @@ sleep 3
 echo "📦 Copiando $SRC a ubuntu@127.0.0.1:$DEST..."
 scp -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY_PRIV" -P "$LOCAL_PORT" "$SRC" "ubuntu@127.0.0.1:$DEST"
 
-echo "👋 Limpiando..."
-kill $TUNNEL_PID 2>/dev/null || true
-oci bastion session delete --session-id "$SESSION_ID" --force >/dev/null 2>&1
 echo "✅ Copia finalizada con éxito."
+exit 0

@@ -1,14 +1,13 @@
+import os
 import requests
+from cf_common import ACCOUNT_ID, get_headers
 
-TOKEN = "REDACTED_CLOUDFLARE_API_TOKEN"
-ACCOUNT_ID = "2a49278db7ba9207c09be9d2c3e9669a"
-HEADERS = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
-}
+HEADERS = get_headers()
 
-CLIENT_ID = "REDACTED_GOOGLE_CLIENT_ID"
-CLIENT_SECRET = "REDACTED_GOOGLE_CLIENT_SECRET"
+CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "REDACTED_GOOGLE_CLIENT_ID")
+CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+if not CLIENT_SECRET:
+    raise RuntimeError("Missing GOOGLE_CLIENT_SECRET environment variable.")
 
 # 1. Check existing IdPs
 print("🔍 Checking existing Identity Providers in Cloudflare...")

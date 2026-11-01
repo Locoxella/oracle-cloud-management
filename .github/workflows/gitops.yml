@@ -1,0 +1,135 @@
+name: GitOps Infrastructure & Ansible Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-dry-run:
+    name: "Dry-Run: Security, Lint & Schema Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Validation Dependencies (PyYAML & Ansible)
+        run: |
+          python3 -m pip install --upgrade pip pyyaml ansible-core
+
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Run Pre-Flight & Dry-Run Verification Suite
+        run: |
+          chmod +x scripts/verify_infra.sh
+          ./scripts/verify_infra.sh
+
+  deploy-and-verify:
+    name: "GitOps Apply & Post-Apply Health Check (Owner Only)"
+    needs: validate-dry-run
+    # Strict guard: only runs on main and ONLY when triggered by locoxella
+    if: >-
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/main' &&
+      github.repository_owner == 'locoxella' &&
+      (github.actor == 'locoxella' || github.triggering_actor == 'locoxella')
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Runtime Dependencies (OCI CLI, Ansible & Requests)
+        run: |
+          python3 -m pip install --upgrade pip oci-cli ansible-core pyyaml requests
+
+      - name: Set up OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Configure OCI CLI & SSH Credentials
+        env:
+          OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+          OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+          OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION || 'us-ashburn-1' }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.oci ~/.ssh
+          chmod 700 ~/.oci ~/.ssh
+
+          # Write OCI API Key & Config
+          echo "$OCI_CLI_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+          chmod 600 ~/.oci/oci_api_key.pem
+
+          cat << EOF > ~/.oci/config
+          [DEFAULT]
+          user=${OCI_CLI_USER}
+          fingerprint=${OCI_CLI_FINGERPRINT}
+          key_file=/home/runner/.oci/oci_api_key.pem
+          tenancy=${OCI_CLI_TENANCY}
+          region=${OCI_CLI_REGION}
+          EOF
+          chmod 600 ~/.oci/config
+
+          # Write SSH Private & Public Key
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
+          chmod 644 ~/.ssh/id_rsa.pub
+
+      - name: Sync OpenTofu State & Plan
+        run: |
+          # Download remote state from OCI Object Storage bucket
+          oci os object get \
+            --bucket-name Aether-Infra-State \
+            --namespace idsbz3qyzayx \
+            --name terraform.tfstate \
+            --file infrastructure/terraform.tfstate || true
+
+          tofu -chdir=infrastructure init -upgrade
+          tofu -chdir=infrastructure plan
+
+      - name: Execute Option B (Ansible Convergence via Ephemeral OCI Bastion)
+        run: |
+          chmod +x scripts/run_ansible_via_bastion.sh
+          ./scripts/run_ansible_via_bastion.sh ansible/playbooks/site.yml --limit oci_nodes
+
+      - name: Execute Empirical Post-Apply Verification Suite
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          chmod +x scripts/verify_infra.sh
+          ./scripts/verify_infra.sh --live
+
+      - name: Persist Updated OpenTofu State to Object Storage
+        if: always()
+        run: |
+          if [[ -f infrastructure/terraform.tfstate ]]; then
+            oci os object put \
+              --bucket-name Aether-Infra-State \
+              --namespace idsbz3qyzayx \
+              --name terraform.tfstate \
+              --file infrastructure/terraform.tfstate \
+              --force
+          fi

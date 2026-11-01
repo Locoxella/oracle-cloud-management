@@ -1,14 +1,11 @@
+import os
 import requests
+from cf_common import ACCOUNT_ID, get_headers
 
-TOKEN = "REDACTED_CLOUDFLARE_API_TOKEN"
-ACCOUNT_ID = "2a49278db7ba9207c09be9d2c3e9669a"
-APP_ID = "c26820fc-79c8-4a01-8c39-ddc33e93a3d8"
-GOOGLE_IDP_ID = "b02151b8-b595-42b6-b3f4-285268aca3f6"
+APP_ID = os.getenv("CLOUDFLARE_APP_ID", "c26820fc-79c8-4a01-8c39-ddc33e93a3d8")
+GOOGLE_IDP_ID = os.getenv("CLOUDFLARE_GOOGLE_IDP_ID", "b02151b8-b595-42b6-b3f4-285268aca3f6")
 
-HEADERS = {
-    "Authorization": f"Bearer {TOKEN}",
-    "Content-Type": "application/json"
-}
+HEADERS = get_headers()
 
 # Fetch full app first
 r = requests.get(f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT_ID}/access/apps/{APP_ID}", headers=HEADERS)

@@ -10,9 +10,16 @@ This folder contains the "memory" and scripts used to manage Always Free resourc
 
 - **VM 1 (AMD Micro):** `Atlas-Node-01`
   - **OCID:** `ocid1.instance.oc1.iad.anuwcljtinltkcac5f3wz76gl4vpx7g6mp3lf2ofwjsjcbuoxqz4vine2wlq`
-  - **Private IP:** `10.0.0.160`
-  - **Status:** Running.
-  - **Storage:** Extra 50GB attached as `/dev/sdb`.
+  - **Private IP:** `10.0.0.160` | **Public IP:** `129.153.185.184`
+  - **Status:** Running (1 OCPU AMD / 1 GB RAM).
+  - **Storage:** Extra 50GB attached as `/dev/sdb` (`Atlas-Vault-01`).
+  - **Connect:** `./connect_vm.sh amd`
+
+- **VM 2 (ARM A1.Flex):** `AlwaysFree-Ubuntu-ARM`
+  - **OCID:** `ocid1.instance.oc1.iad.anuwcljsinltkcacrv222dlla7akmfmgkhwspugq6bevmfvevlvkk5ooul5q`
+  - **Private IP:** `10.0.0.200` | **Public IP:** `129.213.96.28`
+  - **Status:** Running (2 OCPUs Ampere Altra / 12 GB RAM). Provisioned Oct 6, 2026.
+  - **Connect:** `./connect_vm.sh arm`
 
 ### 2. Storage
 
@@ -65,9 +72,10 @@ Then, in another terminal, connect to your VM:
 ssh -i <private_key> -p 2222 ubuntu@localhost
 ```
 
-## Automation / "Hunter" Scripts
+## Archived "Hunter" Scripts
 
-Detailed documentation: [scripts/Scripts.md](scripts/Scripts.md).
+Once both OCI compute nodes were provisioned, the capacity-hunting scripts were archived in [`../archive/hunters/`](../archive/hunters/Scripts.md):
 
-- **ARM Hunter:** [scripts/arm_hunter.sh](scripts/arm_hunter.sh)
-- **AMD Hunter (2):** [scripts/amd_hunter.sh](scripts/amd_hunter.sh)
+- **ARM Hunter Web App:** [`../archive/hunters/arm-hunter/`](../archive/hunters/arm-hunter/app.py)
+- **ARM Hunter CLI:** [`../archive/hunters/arm_hunter.sh`](../archive/hunters/arm_hunter.sh)
+- **AMD Hunter CLI:** [`../archive/hunters/amd_hunter.sh`](../archive/hunters/amd_hunter.sh)

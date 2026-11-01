@@ -5,7 +5,7 @@ services:
     restart: always
     command: tunnel run
     environment:
-      - TUNNEL_TOKEN=eyJhIjogIjJhNDkyNzhkYjdiYTkyMDdjMDliZTlkMmMzZTk2NjlhIiwgInQiOiAiNTU3YjEyMGUtNTUzYi00MmY1LWJjNjUtZDJmZmI5ODAwZWE2IiwgInMiOiAiWUpmMDNFajdmejkwalNHTWRpQjNQeVJVcmhDaDQ1MkJ1OVFiOGJpdWFPUT0ifQ==
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
     networks:
       - aether-net
     labels:
@@ -21,11 +21,12 @@ services:
     image: ghcr.io/wg-easy/wg-easy
     container_name: wg-easy
     environment:
-      - WG_HOST=129.153.185.184
-      - PASSWORD_HASH=$$2a$$12$$6ferbnHikJ.lh75hD0sGeO5mBki0AY.BKziHaw4ZNqX7re7BcnHfm
+      - WG_HOST=${WG_HOST:-129.153.185.184}
+      - PASSWORD_HASH=${PASSWORD_HASH}
     volumes:
       - /mnt/extra-data/wg-easy:/etc/wireguard
     ports:
+      - "51821:51821"
       - "51820:51820/udp"
     cap_add:
       - NET_ADMIN

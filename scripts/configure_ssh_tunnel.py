@@ -1,17 +1,13 @@
-import requests
+import os
 import json
 import base64
-import os
+import requests
+from cf_common import ACCOUNT_ID, get_headers
 
-TOKEN = open('.cloudflare_token').read().strip()
-ACCOUNT_ID = '2a49278db7ba9207c09be9d2c3e9669a'
-ZONE_ID = '6904c05ddc4a10898d60f7bf50e86938'
-tunnel_id = '557b120e-553b-42f5-bc65-d2ffb9800ea6'
+ZONE_ID = os.getenv("CLOUDFLARE_ZONE_ID", "6904c05ddc4a10898d60f7bf50e86938")
+tunnel_id = os.getenv("CLOUDFLARE_TUNNEL_ID", "557b120e-553b-42f5-bc65-d2ffb9800ea6")
 
-headers = {
-    'Authorization': f'Bearer {TOKEN}',
-    'Content-Type': 'application/json'
-}
+headers = get_headers()
 
 # Configure Tunnel Routing
 print("Configuring tunnel routing...")

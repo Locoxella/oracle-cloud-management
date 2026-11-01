@@ -26,59 +26,66 @@ git clone git@git-ssh.solucionesaustral.com:locoxella/oracle-cloud-management.gi
 
 ## 🚀 Estado Actual del Ecosistema
 
-Actualmente, el proyecto se encuentra en la fase de **Bootstrap**. Hemos establecido el "Kilómetro 0" (The Seed) y estamos expandiendo la infraestructura mediante scripts de "cacería" de recursos gratuitos.
+Actualmente, el proyecto cuenta con dos nodos activos en Oracle Cloud (Always Free):
 
-*   **Host Principal:** `Atlas-Node-01` (AMD Micro - Ubuntu)
-*   **Servicio Core:** [Gitea (Forgejo)](https://git.solucionesaustral.com) - Nuestro servidor Git privado y CI/CD.
-*   **Conectividad:** 
-    *   **HTTPS:** Exponiendo servicios mediante un Oracle Load Balancer configurado para Cloudflare.
-    *   **Gestión:** Acceso SSH cerrado al público, gestionado exclusivamente vía **OCI Bastion** (`locoxella-bastion`).
-*   **Almacenamiento:** Volumen persistente de 50GB (`Atlas-Vault-01`) montado para datos críticos.
+*   **Nodo de Cómputo Principal (ARM):** `AlwaysFree-Ubuntu-ARM` (2 OCPUs Ampere Altra / 12 GB RAM / IP `10.0.0.200`)
+    *   **Servicio Core:** [Gitea (Forgejo)](https://git.solucionesaustral.com) - Servidor Git privado y registro de paquetes.
+    *   **CI/CD:** Runner local activo de Gitea Actions (`gitea-runner`).
+    *   **Túnel:** `aether-tunnel-arm` (Cloudflare Tunnel dedicado).
+*   **Nodo Secundario de Gestión & VPN (AMD):** `Atlas-Node-01` (1 OCPU AMD / 1 GB RAM / IP `10.0.0.160`)
+    *   **VPN:** WireGuard Easy (`wg-easy`) para acceso a red interna y túnel completo con IP de EE.UU.
+    *   **Gestión:** Dockge (`dockge.solucionesaustral.com` protegido por Cloudflare Zero Trust) y Autoheal.
+    *   **Almacenamiento Persistente:** Volumen en bloque de 50GB (`Atlas-Vault-01`) montado en `/mnt/extra-data`.
+*   **Conectividad & Seguridad:**
+    *   **HTTPS:** Exposición cifrada de punta a punta mediante Cloudflare Tunnels (sin abrir puertos públicos en la VCN).
+    *   **Gestión SSH:** Acceso cerrado al público, operado exclusivamente mediante **OCI Bastion** (`locoxella-bastion`).
 
 ## 📁 Estructura del Proyecto
 
 ```
 oracle-cloud-management/
-├── .gitea/
-│   └── workflows/
-│       └── validation.yml       # Workflows de CI/CD para Gitea Actions
-├── bootstrap/                   # Scripts de inicialización y despliegues (gitea, arm-hunter, etc.)
-├── infrastructure/              # Configuraciones de infraestructura como código / Tofu
-├── memory/                      # Inventarios, guías humanas y documentación técnica
-└── scripts/ (raíz)              # Scripts auxiliares de túneles, monitoreo y configuración
+├── .github/workflows/
+│   └── gitops.yml               # Pipeline GitOps para GitHub Actions (Dry-Run + Owner Guard + Post-Apply)
+├── .gitea/workflows/
+│   └── validation.yml           # Pipeline espejo para Gitea Actions
+├── ansible/                     # Configuración como Código (CaC) para ARM, AMD y Raspberry Pi
+│   ├── ansible.cfg
+│   ├── inventory/hosts.yml      # Inventario unificado (OCI VMs + Homelab Raspberry Pi)
+│   └── playbooks/               # Playbooks de convergencia (site.yml) y verificación (verify.yml)
+├── archive/hunters/             # Scripts históricos de cacería de capacidad Always Free (archivados)
+├── bootstrap/                   # Inicialización y stacks modulares de Docker Compose
+│   ├── infrastructure/          # Stacks base de gestión (Dockge, Autoheal)
+│   └── stacks/                  # Stacks de servicios (git, network, subastas)
+├── infrastructure/              # Infraestructura como código con OpenTofu / Terraform
+├── memory/                      # Inventarios, topología HA, plan GitOps y guías operativas
+├── scripts/                     # Suite de verificación (verify_infra.sh) y utilidades de Cloudflare
+├── connect_vm.sh                # Acceso interactivo SSH seguro vía OCI Bastion
+└── scp_to_vm.sh                 # Copia de archivos remota a través del Bastion
 ```
 
 ## 🎯 Próximos Pasos (Roadmap)
 
-1.  **Migración de Base de Datos:** Mover el backend de Gitea de SQLite a una **Autonomous Transaction Processing (ATP)** de Oracle.
-2.  **Hardening:** Implementar políticas de seguridad avanzadas y rotación de llaves.
-3.  **CI/CD con Gitea Actions:** Automatizar el despliegue de este repositorio mediante runners locales.
-4.  **Cluster Kubernetes (K3s):** Una vez cazada la instancia ARM (12GB RAM), establecer un cluster de alta disponibilidad.
+1.  **Cluster Kubernetes (K3s):** Desplegar el servidor K3s en `AlwaysFree-Ubuntu-ARM` (12 GB RAM) y unir `Atlas-Node-01` como worker node.
+2.  **Hardening & GitOps:** Fortalecer pipelines en Gitea Actions con OpenTofu para automatizar cambios de infraestructura en cada Pull Request.
+3.  **Monitoreo Unificado:** Configurar conector OCI Monitoring / Prometheus para métricas de ambos nodos.
 
 ## 🛠️ Guía Rápida para el Humano
 
-Si eres el usuario humano (`locoxella`), consulta la **[Guía Humana (GUIA_HUMANA.md)](memory/GUIA_HUMANA.md)** para instrucciones sobre cómo re-establecer túneles, gestionar el balanceador y operar los scripts de cacería.
+Para conectarte a cualquiera de las máquinas virtuales de forma inmediata (sin lidiar con configuraciones manuales de Bastion):
 
-### Conexión Manual a la VM (Terminal Interactiva Segura)
-Si quieres conectarte manualmente a la máquina virtual y evadir el problema de MTU de OCI, sigue estos pasos:
+```bash
+# Conectar al nodo AMD (Atlas-Node-01)
+./connect_vm.sh
 
-1. **Terminal 1: Levantar túnel en el Bastion**
-   ```bash
-   oci bastion session create-port-forwarding --bastion-id "ocid1.bastion.oc1.iad.amaaaaaainltkcaaor463mvd7hxxcyqxpsmnhn3ptr5rdh7h5pvqesqekyma" --display-name "ConexionManual" --ssh-public-key-file ~/.ssh/id_rsa.pub --target-resource-id "ocid1.instance.oc1.iad.anuwcljtinltkcac5f3wz76gl4vpx7g6mp3lf2ofwjsjcbuoxqz4vine2wlq" --target-port 22 --session-ttl 3600
-   ```
-   *Copia el `id` de sesión (`ocid1.bastionsession...`) que te devuelve el comando y espera 10 segundos a que pase a estado ACTIVE.*
+# Conectar al nodo ARM (AlwaysFree-Ubuntu-ARM)
+./connect_vm.sh arm
 
-2. **Terminal 1: Mantener el túnel abierto**
-   ```bash
-   ssh -i ~/.ssh/id_rsa -N -L 2222:10.0.0.160:22 -p 22 <ID_DE_SESION>@host.bastion.us-ashburn-1.oci.oraclecloud.com
-   ```
-   *El comando se quedará colgado (sin salida de texto). Déjalo corriendo; tu túnel está vivo.*
+# Ejecutar un comando remoto directamente
+./connect_vm.sh "docker ps"
+./connect_vm.sh arm "docker ps"
+```
 
-3. **Terminal 2: Conectarse**
-   Abre otra pestaña y ejecuta:
-   ```bash
-   ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -i ~/.ssh/id_rsa -p 2222 ubuntu@127.0.0.1
-   ```
+Para más detalles operativos o resolución de problemas, consulta la **[Guía Humana (GUIA_HUMANA.md)](memory/GUIA_HUMANA.md)**.
 
 ---
 *Gestión impulsada por IA. Codename: Aether.*

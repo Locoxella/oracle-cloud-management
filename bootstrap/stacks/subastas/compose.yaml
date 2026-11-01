@@ -1,0 +1,17 @@
+services:
+  app:
+    image: git.solucionesaustral.com/locoxella/subastas:latest
+    container_name: subastas-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - /opt/subastas/data:/app/data
+    networks:
+      - aether-net
+    labels:
+      - "autoheal=true"
+
+networks:
+  aether-net:
+    external: true
