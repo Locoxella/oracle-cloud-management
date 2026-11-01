@@ -13,13 +13,13 @@ permissions:
 jobs:
   validate-dry-run:
     name: "Dry-Run: Security, Lint & Schema Validation"
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -28,7 +28,7 @@ jobs:
           python3 -m pip install --upgrade pip pyyaml ansible-core
 
       - name: Set up OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v2
         with:
           tofu_wrapper: false
 
@@ -74,16 +74,16 @@ jobs:
       github.ref == 'refs/heads/main' &&
       github.repository_owner == 'locoxella' &&
       (github.actor == 'locoxella' || github.triggering_actor == 'locoxella')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     environment: production
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -92,7 +92,7 @@ jobs:
           python3 -m pip install --upgrade pip oci-cli ansible-core pyyaml requests
 
       - name: Set up OpenTofu
-        uses: opentofu/setup-opentofu@v1
+        uses: opentofu/setup-opentofu@v2
         with:
           tofu_wrapper: false
 

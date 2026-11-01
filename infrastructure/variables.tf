@@ -27,3 +27,4 @@ variable "compartment_id" {
   type    = string
   default = "ocid1.tenancy.oc1..aaaaaaaacdo7v2uzdflqej637btfq53aeztwpnk3epxz64e7int3pcy5dxwa"
 }
+
