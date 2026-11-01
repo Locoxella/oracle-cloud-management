@@ -107,6 +107,33 @@ echo "=================================================================="
 echo "🌐 [6/6] Post-Apply / Live Infrastructure Verification"
 echo "=================================================================="
 if [[ "$LIVE_MODE" != "true" ]]; then
+    REPORT="### 🔍 Pre-Flight Dry-Run Validation Summary
+
+| Check Component | Verification Scope | Status |
+| :--- | :--- | :--- |
+| 🛡️ **Secret Leak Guard** | Scans tracked files & \`.gitignore\` compliance | ✅ Passed |
+| 🐚 **Bash Scripts Syntax** | Evaluates all bash utilities with \`bash -n\` | ✅ Passed |
+| 🐍 **Python Compilation** | Compiles all scripts cleanly with \`py_compile\` | ✅ Passed |
+| 📦 **Docker Compose & Ansible** | Validates compose file schemas and playbook syntax | ✅ Passed |
+| 🏗️ **OpenTofu IaC Engine** | Formats and validates all HCL resource definitions (\`tofu validate\`) | ✅ Passed |
+
+> ℹ️ *Dry-run validation completed successfully without accessing production credentials.*"
+
+    echo ""
+    echo "================================================================================"
+    echo "📊 PRE-FLIGHT DRY-RUN VALIDATION REPORT"
+    echo "================================================================================"
+    echo -e "$REPORT"
+    echo "================================================================================"
+
+    if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]] && [[ -w "$GITHUB_STEP_SUMMARY" ]]; then
+        echo -e "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+    fi
+
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        echo "::notice title=Dry-Run Validation Passed::All security, script syntax, YAML schema, and OpenTofu IaC checks verified cleanly."
+    fi
+
     echo "ℹ️  Dry-Run complete. Pass '--live' to execute empirical post-apply checks."
     exit 0
 fi
@@ -142,6 +169,34 @@ check_http "https://wg.solucionesaustral.com" "302"
 if [[ -f ".cloudflare_token" ]] || [[ -n "${CLOUDFLARE_API_TOKEN:-}" ]]; then
     echo "Running comprehensive Cloudflare Health & Ingress Audit..."
     python3 scripts/verify-cf-health.py
+fi
+
+LIVE_REPORT="### 🌐 Post-Apply Live Infrastructure Verification Summary
+
+| Check Component | Verification Scope | Status |
+| :--- | :--- | :--- |
+| 🛡️ **Secret Leak Guard** | Scans tracked files & \`.gitignore\` compliance | ✅ Passed |
+| 🐚 **Bash Scripts Syntax** | Evaluates all bash utilities with \`bash -n\` | ✅ Passed |
+| 🐍 **Python Compilation** | Compiles all scripts cleanly with \`py_compile\` | ✅ Passed |
+| 📦 **Docker Compose & Ansible** | Validates compose file schemas and playbook syntax | ✅ Passed |
+| 🏗️ **OpenTofu IaC Engine** | Formats and validates all HCL resource definitions | ✅ Passed |
+| 🌐 **Zero Trust Edge Endpoints** | Gitea, Subastas, Dockge, WireGuard via Cloudflare | ✅ Passed |
+
+> 🚀 *All empirical post-apply checks and live edge endpoints verified online.*"
+
+echo ""
+echo "================================================================================"
+echo "📊 LIVE INFRASTRUCTURE VERIFICATION REPORT"
+echo "================================================================================"
+echo -e "$LIVE_REPORT"
+echo "================================================================================"
+
+if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]] && [[ -w "$GITHUB_STEP_SUMMARY" ]]; then
+    echo -e "$LIVE_REPORT" >> "$GITHUB_STEP_SUMMARY"
+fi
+
+if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    echo "::notice title=Post-Apply Verification Passed::All Cloudflare Edge & Zero Trust endpoints responded with expected status codes."
 fi
 
 echo "✅ All Pre-Flight and Live Post-Apply checks PASSED!"

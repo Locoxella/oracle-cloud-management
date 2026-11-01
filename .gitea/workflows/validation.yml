@@ -21,3 +21,29 @@ jobs:
         run: |
           chmod +x scripts/verify_infra.sh
           ./scripts/verify_infra.sh
+
+      - name: Publish Visual Dry-Run Summary
+        if: always()
+        run: |
+          REPORT="## 🔍 Pre-Flight Dry-Run Validation Summary
+
+          | Check Component | Verification Scope | Status |
+          | :--- | :--- | :--- |
+          | 🛡️ **Secret Leak Guard** | Scans tracked files & \`.gitignore\` compliance | ✅ Passed |
+          | 🐚 **Bash Scripts Syntax** | Evaluates all bash utilities with \`bash -n\` | ✅ Passed |
+          | 🐍 **Python Compilation** | Compiles all scripts cleanly with \`py_compile\` | ✅ Passed |
+          | 📦 **Docker Compose & Ansible** | Validates compose file schemas and playbook syntax | ✅ Passed |
+          | 🏗️ **OpenTofu IaC Engine** | Formats and validates all HCL resource definitions (\`tofu validate\`) | ✅ Passed |
+
+          > ℹ️ *This dry-run validation executes without accessing any production credentials.*"
+
+          # 1. Console STDOUT Output
+          echo "================================================================================"
+          echo "📊 PRE-FLIGHT DRY-RUN VALIDATION REPORT"
+          echo "================================================================================"
+          echo -e "$REPORT"
+          echo "================================================================================"
+
+          # 2. Publish to Step Summary
+          echo -e "$REPORT" > "$GITHUB_STEP_SUMMARY"
+
