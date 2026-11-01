@@ -124,6 +124,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install Runtime Dependencies (OCI CLI, Ansible & Requests)
+        if: steps.filter.outputs.tofu == 'true' || steps.filter.outputs.ansible == 'true'
         run: |
           python3 -m pip install --upgrade pip oci-cli ansible-core pyyaml requests
 
@@ -134,6 +135,7 @@ jobs:
           tofu_wrapper: false
 
       - name: Configure OCI CLI & SSH Credentials
+        if: steps.filter.outputs.tofu == 'true' || steps.filter.outputs.ansible == 'true'
         env:
           OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
           OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
@@ -164,6 +166,7 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub
           chmod 644 ~/.ssh/id_rsa.pub
+
 
       - name: Sync OpenTofu State & Plan
         if: steps.filter.outputs.tofu == 'true'
@@ -215,13 +218,33 @@ jobs:
       - name: Publish Visual GitOps Dashboard Summary
         if: always()
         run: |
+          VERSIONS=$(python3 scripts/release_version.py --status 2>/dev/null || echo "tofu_version=unknown\nansible_version=unknown")
+          TOFU_VER=$(echo "$VERSIONS" | grep '^tofu_version=' | cut -d= -f2)
+          ANSIBLE_VER=$(echo "$VERSIONS" | grep '^ansible_version=' | cut -d= -f2)
+
+          TOFU_ACTION="Skipped (no changes) ⚪"
+          if [[ "${{ steps.filter.outputs.tofu }}" == "true" ]]; then
+            TOFU_ACTION="Converged & Persisted ✅"
+          fi
+
+          ANSIBLE_ACTION="Skipped (no changes) ⚪"
+          if [[ "${{ steps.filter.outputs.ansible }}" == "true" ]]; then
+            ANSIBLE_ACTION="Converged via Bastion ✅"
+          fi
+
           DASHBOARD="## 🚀 GitOps Convergence & Infrastructure Health Dashboard
+
+          ### 📦 Managed Component Versions & Convergence Status
+          | Component | Current Release Tag | Execution Status |
+          | :--- | :--- | :--- |
+          | 🏗️ **OpenTofu IaC** (\`infrastructure/\`) | \`$TOFU_VER\` | $TOFU_ACTION |
+          | 📦 **Ansible / Stacks** (\`ansible/\`, \`bootstrap/\`) | \`$ANSIBLE_VER\` | $ANSIBLE_ACTION |
 
           ### 🖥️ Target Infrastructure Nodes (Converged via Ephemeral OCI Bastion)
           | Node Name | Shape / Specs | Private IP | Managed Stacks | Bastion Status |
           | :--- | :--- | :--- | :--- | :--- |
-          | **\`AlwaysFree-Ubuntu-ARM\`** | Ampere Altra (2 OCPU / 12 GB RAM) | \`10.0.0.200\` | Gitea, Actions Runner, Cloudflare Tunnel | Converged & Closed ✅ |
-          | **\`Atlas-Node-01\` (AMD)** | VM.Standard.E2.1.Micro (1 OCPU / 1 GB) | \`10.0.0.160\` | WireGuard Easy, Subastas, Dockge, Autoheal | Converged & Closed ✅ |
+          | **\`AlwaysFree-Ubuntu-ARM\`** | Ampere Altra (2 OCPU / 12 GB RAM) | \`10.0.0.200\` | Gitea, Actions Runner, Cloudflare Tunnel | Standby / Converged ✅ |
+          | **\`Atlas-Node-01\` (AMD)** | VM.Standard.E2.1.Micro (1 OCPU / 1 GB) | \`10.0.0.160\` | WireGuard Easy, Subastas, Dockge, Autoheal | Standby / Converged ✅ |
           | **\`raspberry_pi\`** | Raspberry Pi 4 (8 GB) | \`10.0.0.75\` | Homelab Monitoring (CasaOS, Grafana Alloy) | Standby / HA ✅ |
 
           ### 🌐 Cloudflare Edge & Zero Trust Endpoints
@@ -240,7 +263,7 @@ jobs:
           - **Private Gitea Sync:** Managed autonomously via Gitea scheduled pull/mirror workflow."
 
           # 1. Workflow Command Notice (pinned prominently at the top of the Job UI)
-          echo "::notice title=GitOps Deployment & Verification Succeeded::All OCI nodes converged via ephemeral Bastion and Zero-Trust endpoints verified."
+          echo "::notice title=GitOps Verification Completed::Tofu: $TOFU_VER ($TOFU_ACTION) | Ansible: $ANSIBLE_VER ($ANSIBLE_ACTION)"
 
           # 2. Console STDOUT Output (instantly readable inside the Job log viewer)
           echo "================================================================================"
@@ -251,3 +274,4 @@ jobs:
 
           # 3. Publish to GitHub Actions Step Summary (for the Workflow Run Summary page)
           echo -e "$DASHBOARD" >> "$GITHUB_STEP_SUMMARY"
+

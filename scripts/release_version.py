@@ -35,6 +35,14 @@ def parse_semver(tag_str, prefix):
     return (int(match.group(1)), int(match.group(2)), int(match.group(3)))
 
 
+def get_current_versions():
+    res = {}
+    for comp, cfg in COMPONENTS.items():
+        tag, _ = get_latest_tag(cfg["prefix"])
+        res[comp] = tag or "v0.1.0 (unreleased)"
+    return res
+
+
 def get_latest_tag(prefix):
     try:
         tags = run_cmd(["git", "tag", "-l", f"{prefix}*"]).splitlines()
@@ -99,7 +107,13 @@ def get_commits_since(tag, paths):
 
 
 def main():
-    component = sys.argv[1] if len(sys.argv) > 1 else "all"
+    if "--status" in sys.argv:
+        versions = get_current_versions()
+        for k, v in versions.items():
+            print(f"{k}_version={v}")
+        return
+
+    component = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else "all"
     targets = [component] if component in COMPONENTS else list(COMPONENTS.keys())
 
     for comp in targets:
@@ -133,3 +147,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

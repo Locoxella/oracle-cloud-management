@@ -1,9 +1,13 @@
 name: Sync Mirror from Public GitHub
 
 on:
+  schedule:
+    # Run once daily at 03:00 UTC to keep private Gitea in sync with upstream GitHub
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 jobs:
+
 
   sync:
     name: "Sync from GitHub Upstream"

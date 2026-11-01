@@ -1,10 +1,12 @@
 # 🌌 Oracle Cloud Infrastructure: Management & GitOps (Aether)
 
 [![GitOps Pipeline](https://github.com/Locoxella/oracle-cloud-management/actions/workflows/gitops.yml/badge.svg)](https://github.com/Locoxella/oracle-cloud-management/actions/workflows/gitops.yml)
-[![OpenTofu](https://img.shields.io/badge/IaC-OpenTofu-blue.svg)](https://opentofu.org/)
-[![Ansible](https://img.shields.io/badge/CaC-Ansible-red.svg)](https://www.ansible.com/)
+[![OpenTofu Version](https://img.shields.io/github/v/tag/Locoxella/oracle-cloud-management?filter=tofu-v*&label=OpenTofu&color=blue)](https://github.com/Locoxella/oracle-cloud-management/tags)
+[![Ansible Version](https://img.shields.io/github/v/tag/Locoxella/oracle-cloud-management?filter=ansible-v*&label=Ansible&color=red)](https://github.com/Locoxella/oracle-cloud-management/tags)
+[![Gitea Mirror](https://img.shields.io/badge/Gitea-Private_Mirror-green.svg)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management)
 [![Cloudflare Zero Trust](https://img.shields.io/badge/Security-Cloudflare_Zero_Trust-orange.svg)](https://www.cloudflare.com/zero-trust/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 
 > [!NOTE]
 > **Personal Infrastructure Showcase**: This repository contains the Infrastructure as Code (IaC), Configuration as Code (CaC), and automated GitOps CI/CD pipelines used to maintain **my personal infrastructure** across Oracle Cloud (OCI Always Free tier), Cloudflare Zero Trust Edge, and my local Homelab.

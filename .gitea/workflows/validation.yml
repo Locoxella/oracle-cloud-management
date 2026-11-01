@@ -1,24 +1,30 @@
 name: Validation Pipeline
 
 on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-
   validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install PyYAML if needed
+      - name: Prepare Validation Environment
         run: |
-          python3 -c "import yaml" 2>/dev/null || pip3 install --break-system-packages pyyaml || pip3 install pyyaml || true
+          # Install core validation tools in lightweight Gitea runner container if missing
+          which pip3 >/dev/null 2>&1 || (apt-get update && apt-get install -y python3-pip python3-yaml curl git jq) || true
+          python3 -c "import yaml" 2>/dev/null || pip3 install --break-system-packages pyyaml || true
 
       - name: Run Unified Pre-Flight & Dry-Run Suite
         run: |
           chmod +x scripts/verify_infra.sh
           ./scripts/verify_infra.sh
+
 
       - name: Publish Visual Dry-Run Summary
         if: always()

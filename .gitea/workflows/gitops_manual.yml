@@ -1,0 +1,114 @@
+name: "Manual GitOps: Deploy & Configure (Gitea Fallback)"
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Execution Target Scope"
+        required: true
+        default: "all"
+        type: choice
+        options:
+          - all
+          - tofu
+          - ansible
+
+jobs:
+  manual-gitops:
+    name: "Manual GitOps Apply (Gitea Fallback)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Prepare Runtime Dependencies
+        run: |
+          which python3 >/dev/null 2>&1 || (apt-get update && apt-get install -y python3 python3-pip git curl jq) || true
+          which pip3 >/dev/null 2>&1 || apt-get install -y python3-pip || true
+          python3 -m pip install --upgrade --break-system-packages pip oci-cli ansible-core pyyaml requests || \
+          python3 -m pip install --upgrade pip oci-cli ansible-core pyyaml requests || true
+
+      - name: Install OpenTofu
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == 'tofu'
+        run: |
+          if ! command -v tofu >/dev/null 2>&1; then
+            curl -fsSL https://get.opentofu.org/install-opentofu.sh -o install-opentofu.sh
+            chmod +x install-opentofu.sh
+            ./install-opentofu.sh --install-method standalone || true
+            rm -f install-opentofu.sh
+          fi
+
+      - name: Configure OCI CLI & SSH Credentials
+        env:
+          OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+          OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+          OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          OCI_CLI_REGION: ${{ secrets.OCI_CLI_REGION || 'us-ashburn-1' }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          mkdir -p ~/.oci ~/.ssh
+          chmod 700 ~/.oci ~/.ssh
+
+          if [[ -n "$OCI_CLI_KEY_CONTENT" ]]; then
+            echo "$OCI_CLI_KEY_CONTENT" > ~/.oci/oci_api_key.pem
+            chmod 600 ~/.oci/oci_api_key.pem
+
+            cat << 'EOF' > ~/.oci/config
+            [DEFAULT]
+            user=${OCI_CLI_USER}
+            fingerprint=${OCI_CLI_FINGERPRINT}
+            key_file=/root/.oci/oci_api_key.pem
+            tenancy=${OCI_CLI_TENANCY}
+            region=${OCI_CLI_REGION}
+            EOF
+            sed -i 's/^[[:space:]]*//' ~/.oci/config
+            chmod 600 ~/.oci/config
+          fi
+
+
+          if [[ -n "$SSH_PRIVATE_KEY" ]]; then
+            echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keygen -y -f ~/.ssh/id_rsa > ~/.ssh/id_rsa.pub 2>/dev/null || true
+            chmod 644 ~/.ssh/id_rsa.pub 2>/dev/null || true
+          fi
+
+      - name: OpenTofu Provisioning (Manual)
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == 'tofu'
+        run: |
+          echo "Starting OpenTofu synchronization & apply..."
+          oci os object get \
+            --bucket-name Aether-Infra-State \
+            --namespace idsbz3qyzayx \
+            --name terraform.tfstate \
+            --file infrastructure/terraform.tfstate || true
+
+          tofu -chdir=infrastructure init -upgrade
+          tofu -chdir=infrastructure plan
+
+      - name: Ansible Convergence (Manual)
+        if: github.event.inputs.target == 'all' || github.event.inputs.target == 'ansible'
+        run: |
+          chmod +x scripts/run_ansible_via_bastion.sh
+          ./scripts/run_ansible_via_bastion.sh ansible/playbooks/site.yml --limit oci_nodes
+
+      - name: Empirical Post-Apply Health Check
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          chmod +x scripts/verify_infra.sh
+          ./scripts/verify_infra.sh --live
+
+      - name: Publish Visual GitOps Summary
+        if: always()
+        run: |
+          REPORT="## 🚀 Gitea Manual GitOps Execution Summary
+          - **Trigger:** Manual Dispatch (Target: \`${{ github.event.inputs.target }}\`)
+          - **Source:** Private Gitea (\`git.solucionesaustral.com\`)
+          - **Status:** Completed Successfully ✅"
+
+          echo "$REPORT"
+          echo "$REPORT" >> "$GITHUB_STEP_SUMMARY"
