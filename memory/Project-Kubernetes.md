@@ -1,22 +1,18 @@
-# 🎡 Proyecto: Aether-Cluster (K3s Multi-Zonal)
+# 🎡 Project: Aether-Cluster (K3s Multi-Zonal)
 
-El objetivo es crear un cluster de Kubernetes ligero que se distribuya entre las 3 Availability Domains de US-Ashburn.
+The goal of this initiative is to deploy a lightweight Kubernetes (K3s) cluster distributed across availability domains in US-Ashburn.
 
-## Arquitectura Probable
+## Target Architecture
 
-- **Control Plane (The Brain):** Se instalará en la VM **ARM** (2 cores / 12GB RAM) por su alta capacidad.
-- **Worker Nodes:** Las 2 VMs **AMD Micro** actuarán como nodos de trabajo para microservicios livianos.
-- **Capa de Red:** Flannel o Calico sobre la VCN `Aether-Network`.
-- **Ingress:** Usaremos el **Flexible Load Balancer** gratuito de Oracle para recibir tráfico externo.
+- **Control Plane:** Hosted on `AlwaysFree-Ubuntu-ARM` (2 cores Ampere / 12 GB RAM) leveraging high compute and memory capacity.
+- **Worker Nodes:** AMD nodes (`Atlas-Node-01`) serving as lightweight worker nodes.
+- **Overlay Network:** Flannel or Calico running over the `Aether-Network` VCN (`10.0.0.0/16`).
+- **Ingress Strategy:** Cloudflare Tunnels (or Oracle Always Free Flexible Load Balancer) for zero-trust external traffic routing.
 
-## User Stories / Roadmap
+## Milestones & Roadmap
 
-1. [ ] **Bootstrap Base:** Configurar OS, firewall y dependencias en todos los nodos.
-2. [ ] **Nudo Central:** Desplegar K3s Server en la ARM VM una vez capturada.
-3. [ ] **Join Nodes:** Unir `Atlas-Node-01` y el futuro segundo nodo al cluster.
-4. [ ] **Storage Class:** Configurar el CSI de Oracle para usar los 200GB de Block Storage como volúmenes dinámicos de K8s.
-5. [ ] **Cert-Manager:** Usar el servicio de certificados de Oracle o Let's Encrypt para HTTPS automático.
-
-## Gestión de Carga (Keep-Alive)
-
-Al correr un cluster de K3s con pods reales (como Atlantis, Prometheus, etc.), cumpliremos naturalmente con los requisitos de Oracle de >20% de uso, evitando que nos borren las máquinas.
+1. [ ] **Prerequisites:** Validate kernel parameters, cgroups, and firewall rules on all nodes.
+2. [ ] **Control Plane Deployment:** Initialize K3s server on the ARM node using systemd.
+3. [ ] **Worker Join:** Join `Atlas-Node-01` to the cluster via internal VCN IP (`10.0.0.160`).
+4. [ ] **Storage Class Integration:** Configure OCI CSI driver to leverage block storage for dynamic volume provisioning.
+5. [ ] **Ingress Controller & Certs:** Route ingress via Cloudflare Tunnel edge endpoints.

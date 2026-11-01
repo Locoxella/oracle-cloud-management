@@ -1,52 +1,58 @@
-# 📊 Inventario de Recursos (Oracle Always Free)
+# 📊 Resource Inventory (Oracle Always Free)
 
-Este documento trackea qué recursos del nivel "Always Free" hemos reclamado y cuáles tenemos aún disponibles (validado empíricamente contra OCI API).
+This document tracks all resources claimed under the "Always Free" tier and remaining capacity (empirically reconciled with the OCI API).
 
-## 1. Cómputo (Máquinas Virtuales)
+---
 
-| Recurso | Utilizado | Total Disponible | Restante |
+## 1. Compute (Virtual Machines)
+
+| Resource | Allocated | Total Available | Remaining Quota |
 | :--- | :--- | :--- | :--- |
-| **AMD Compute (E2.1.Micro)** | 1 (`Atlas-Node-01`) | 2 Instancias | **1 Instancia** (Libre) |
-| **ARM Compute (A1.Flex)** | 1 (`AlwaysFree-Ubuntu-ARM`) | 4 OCPUs / 24 GB RAM | **2 OCPUs / 12 GB RAM** (Libre para ampliar o nueva VM) |
+| **AMD Compute (`VM.Standard.E2.1.Micro`)** | 1 (`Atlas-Node-01`) | 2 Instances | **1 Instance** (Free) |
+| **ARM Compute (`VM.Standard.A1.Flex`)** | 1 (`AlwaysFree-Ubuntu-ARM`) | 4 OCPUs / 24 GB RAM | **2 OCPUs / 12 GB RAM** (Free for expansion or 2nd ARM VM) |
 
-### Detalle de Instancias Activas:
+### Active Compute Details:
 1. **`Atlas-Node-01` (AMD Micro):**
    * **OCID:** `ocid1.instance.oc1.iad.anuwcljtinltkcac5f3wz76gl4vpx7g6mp3lf2ofwjsjcbuoxqz4vine2wlq`
-   * **IP Privada:** `10.0.0.160` | **IP Pública:** `129.153.185.184`
-   * **Specs:** 1 OCPU / 1 GB RAM / 47 GB Boot Volume.
-   * **Servicios:** Dockge, WireGuard Easy, Autoheal, Cloudflare Tunnel, Subastas App.
+   * **Private IP:** `10.0.0.160` | **Public IP:** `129.153.185.184`
+   * **Specs:** 1 OCPU AMD / 1 GB RAM / 47 GB Boot Volume.
+   * **Services:** Dockge, WireGuard Easy, Autoheal, Cloudflare Tunnel, Subastas Web App.
 2. **`AlwaysFree-Ubuntu-ARM` (ARM A1.Flex):**
    * **OCID:** `ocid1.instance.oc1.iad.anuwcljsinltkcacrv222dlla7akmfmgkhwspugq6bevmfvevlvkk5ooul5q`
-   * **IP Privada:** `10.0.0.200` | **IP Pública:** `129.213.96.28`
-   * **Specs:** 2 OCPUs / 12 GB RAM / 47 GB Boot Volume (Creada el 06/10/2026).
-   * **Servicios:** Gitea (Forgejo), Gitea Actions Runner, Dockge ARM, Cloudflare Tunnel ARM.
+   * **Private IP:** `10.0.0.200` | **Public IP:** `129.213.96.28`
+   * **Specs:** 2 OCPUs Ampere Altra / 12 GB RAM / 47 GB Boot Volume.
+   * **Services:** Gitea (Forgejo), Gitea Actions Runner, Dockge ARM, Cloudflare Tunnel ARM.
 
-## 2. Almacenamiento (Block & Boot Volumes)
+---
 
-Total Gratuito OCI: **200 GB**
+## 2. Storage (Block & Boot Volumes)
 
-| Volumen | Tamaño | Instancia Asociada | Estado |
+Total Always Free Storage Quota: **200 GB**
+
+| Volume | Size | Associated Instance | Mount Status |
 | :--- | :--- | :--- | :--- |
-| Boot Volume (`Atlas-Node-01`) | 47 GB | `Atlas-Node-01` (AMD) | En uso |
-| Boot Volume (`AlwaysFree-Ubuntu-ARM`) | 47 GB | `AlwaysFree-Ubuntu-ARM` (ARM) | En uso |
-| `Atlas-Vault-01` (Block Storage) | 50 GB | `Atlas-Node-01` (`/mnt/extra-data`) | En uso |
-| **Total Utilizado** | **144 GB** | — | — |
-| **Capacidad Restante** | **56 GB** | — | **56 GB libres** (apto para otro disco o expansión) |
+| Boot Volume (`Atlas-Node-01`) | 47 GB | `Atlas-Node-01` (AMD) | In use (`/dev/sda`) |
+| Boot Volume (`AlwaysFree-Ubuntu-ARM`) | 47 GB | `AlwaysFree-Ubuntu-ARM` (ARM) | In use (`/dev/sda`) |
+| `Atlas-Vault-01` (Block Volume) | 50 GB | `Atlas-Node-01` | In use (`/mnt/extra-data`) |
+| **Total Allocated** | **144 GB** | — | — |
+| **Remaining Free Storage** | **56 GB** | — | **56 GB unallocated** (available for new volume or expansion) |
 
-## 3. Bases de Datos (Gestionadas)
+---
 
-| Servicio | Capacidad | Estado |
+## 3. Managed Databases
+
+| Service | Always Free Quota | Current Status |
 | :--- | :--- | :--- |
-| **Autonomous DB** | 2 Instancias (20GB c/u) | **Libre** (la API devuelve 0 Autonomous DB; la `Aether-Seed-DB` documentada antes ya no existe en el compartimento, causa no determinada) |
-| **NoSQL Database** | 133M reads/month | **Libre** |
+| **Autonomous Database** | 2 Instances (20 GB storage each) | **Free** (0 active instances in compartment) |
+| **NoSQL Database** | 133M reads/month, 50 GB storage | **Free** (0 provisioned) |
 
-## 4. Red y Otros
+---
 
-| Servicio | Capacidad | Estado | Notas |
+## 4. Networking & Storage Services
+
+| Service | Tier Quota | Current Status | Operational Notes |
 | :--- | :--- | :--- | :--- |
-| **Load Balancer** | 1 Instancia (10 Mbps) | **Libre** | 0 aprovisionados (todo el tráfico entra vía Cloudflare Tunnels) |
-| **Egress Traffic** | 10 TB Mensuales | En uso | Tráfico regular y VPN WireGuard |
-| **OCI Bastion** | 1 Instancia (`locoxella-bastion`) | En uso | Acceso SSH seguro a subred `10.0.0.0/16` |
-| **Object Storage** | 1 Bucket (`Aether-Infra-State`) | En uso | Namespace `idsbz3qyzayx` |
-| **Gitea Backend** | State Storage | En uso | Backend OpenTofu nativo de Gitea |
-| **Certificates** | 5 Autoridades / 150 Certs | **Libre** | SSL/TLS delegado a Cloudflare |
+| **Flexible Load Balancer** | 1 Instance (10 Mbps) | **Free** | Unallocated (ingress routed via Cloudflare Tunnels) |
+| **Outbound Data Transfer** | 10 TB Monthly | In use | Regular egress and WireGuard VPN tunneling |
+| **OCI Bastion Service** | 1 Bastion (`locoxella-bastion`) | In use | Secure SSH port-forwarding to private subnet `10.0.0.0/16` |
+| **Object Storage** | 10 GB Standard / 10 GB Archive | In use | Bucket `Aether-Infra-State` (Namespace: `idsbz3qyzayx`) |

@@ -1,34 +1,41 @@
 # ☁️ Cloudflare & Cloudflare Tunnel (`cloudflared`) Integration
 
-Este documento registra la arquitectura, túneles de alta disponibilidad (HA) y políticas de Zero Trust para el dominio `solucionesaustral.com` (verificado empíricamente contra la API v4 de Cloudflare el 2026-11-01).
+This document specifies the architecture, High Availability (HA) tunnels, and Zero Trust access policies for `solucionesaustral.com` (empirically reconciled against Cloudflare API v4).
 
-## 🏛️ Topología de Túneles y Alta Disponibilidad (HA)
+---
+
+## 🏛️ Tunnel Topology & High Availability (HA)
 
 1. **`aether-tunnel` (`557b120e-553b-42f5-bc65-d2ffb9800ea6`):**
-   - **Estado:** `HEALTHY` (8 conexiones activas al borde de Cloudflare).
-   - **Modo HA en OCI:** Dos réplicas conectadas simultáneamente al mismo túnel dentro de la VCN `10.0.0.0/24`:
-     - `aether-tunnel` en `Atlas-Node-01` (AMD `10.0.0.160`) — 4 conexiones.
-     - `aether-tunnel-arm` en `AlwaysFree-Ubuntu-ARM` (ARM `10.0.0.200`) — 4 conexiones.
-   - Si cualquiera de los contenedores de túnel en OCI se reinicia, el otro nodo enruta el tráfico interno hacia `10.0.0.160` o `10.0.0.200` sin caída de servicio.
+   - **Status:** `HEALTHY` (8 active edge connections).
+   - **Active-Active HA Mode in OCI:** Two instances running concurrently within the `10.0.0.0/24` subnet:
+     - `aether-tunnel` on `Atlas-Node-01` (AMD `10.0.0.160`) — 4 edge connections.
+     - `aether-tunnel-arm` on `AlwaysFree-Ubuntu-ARM` (ARM `10.0.0.200`) — 4 edge connections.
+   - If either host or container restarts, the surviving replica routes internal VCN traffic to either `10.0.0.160` or `10.0.0.200` without downtime.
 
 2. **`pi-home-tunnel` (`63795e0e-ef77-4758-aa7a-9b75611b5d2c`):**
-   - **Estado:** `HEALTHY` (4 conexiones activas al borde).
-   - **Nodo Homelab:** `aether-tunnel-pi` ejecutándose en el **Raspberry Pi 4 (`10.0.0.75`)**.
+   - **Status:** `HEALTHY` (4 active edge connections).
+   - **Homelab Node:** `aether-tunnel-pi` running on **Raspberry Pi 4 (`10.0.0.75`)**.
 
-## 🌐 Catálogo de Servicios e Ingress Verificado
+---
 
-| Servicio | Hostname Público | Destino Interno | Túnel / Modo | Seguridad / Acceso |
+## 🌐 Ingress Route Catalog & Verified Endpoints
+
+| Service | Public Hostname | Internal Destination | Ingress Tunnel | Access & Security Model |
 | :--- | :--- | :--- | :--- | :--- |
-| **Gitea Web** | `git.solucionesaustral.com` | `http://10.0.0.200:3000` | `aether-tunnel` | Público (HTTPS Cloudflare) |
-| **Gitea SSH** | `git-ssh.solucionesaustral.com` | `129.213.96.28:2222` | DNS / SSH Directo | Llave SSH + Firewall DDNS |
-| **Subastas** | `subastas.solucionesaustral.com` | `http://10.0.0.160:8000` | `aether-tunnel` | Público (SPA + API) |
-| **Dockge (Principal)** | `dockge.solucionesaustral.com` | `http://10.0.0.160:5001` | `aether-tunnel` | Cloudflare Zero Trust Access |
-| **Dockge (AMD)** | `dockge-amd.solucionesaustral.com` | `http://10.0.0.160:5001` | `aether-tunnel` | Cloudflare Zero Trust Access |
-| **Dockge (ARM)** | `dockge-arm.solucionesaustral.com` | `http://10.0.0.200:5001` | `aether-tunnel` | Cloudflare Zero Trust Access |
-| **Dockge (Pi)** | `dockge-pi.solucionesaustral.com` | `http://localhost:5001` | `pi-home-tunnel` | Cloudflare Zero Trust Access |
-| **WireGuard Easy** | `wg.solucionesaustral.com` | `http://10.0.0.160:51821` | `aether-tunnel` | Cloudflare Zero Trust Access |
+| **Gitea Web** | `git.solucionesaustral.com` | `http://10.0.0.200:3000` | `aether-tunnel` | Public Cloudflare Edge (HTTPS) |
+| **Gitea SSH** | `git-ssh.solucionesaustral.com` | `129.213.96.28:2222` | Direct DNS / Port 2222 | SSH Key + Dynamic Firewall Timer |
+| **Subastas Web** | `subastas.solucionesaustral.com` | `http://10.0.0.160:8000` | `aether-tunnel` | Public Cloudflare Edge (SPA + API) |
+| **Dockge Manager** | `dockge.solucionesaustral.com` | `http://10.0.0.160:5001` | `aether-tunnel` | Zero Trust Access (Google IdP) |
+| **Dockge AMD** | `dockge-amd.solucionesaustral.com` | `http://10.0.0.160:5001` | `aether-tunnel` | Zero Trust Access (Google IdP) |
+| **Dockge ARM** | `dockge-arm.solucionesaustral.com` | `http://10.0.0.200:5001` | `aether-tunnel` | Zero Trust Access (Google IdP) |
+| **Dockge Pi** | `dockge-pi.solucionesaustral.com` | `http://localhost:5001` | `pi-home-tunnel` | Zero Trust Access (`pi-home-tunnel`) |
+| **WireGuard Easy** | `wg.solucionesaustral.com` | `http://10.0.0.160:51821` | `aether-tunnel` | Zero Trust Access (Google IdP) |
 
-## 🔑 Autenticación & API Token
-- El token local se almacena en `.cloudflare_token` (excluido por `.gitignore`).
+---
+
+## 🔑 Authentication & API References
+
+- Local secret token is stored in `.cloudflare_token` (ignored by `.gitignore`).
 - **Account ID:** `2a49278db7ba9207c09be9d2c3e9669a`
 - **Zone ID (`solucionesaustral.com`):** `6904c05ddc4a10898d60f7bf50e86938`

@@ -1,9 +1,9 @@
-# 🌐 Red (VCN existente)
+# 🌐 Network (Existing VCN)
 resource "oci_core_vcn" "aether_network" {
   compartment_id = var.compartment_id
 }
 
-# 🛡️ Lista de Seguridad
+# 🛡️ Security List
 resource "oci_core_security_list" "aether_guard_list" {
   compartment_id = var.compartment_id
   vcn_id         = oci_core_vcn.aether_network.id
@@ -96,7 +96,7 @@ resource "oci_bastion_bastion" "locoxella_bastion" {
   max_session_ttl_in_seconds   = 10800
 }
 
-# 💻 Cómputo AMD (Atlas-Node-01)
+# 💻 Compute AMD (Atlas-Node-01)
 resource "oci_core_instance" "atlas_node_01" {
   compartment_id      = var.compartment_id
   availability_domain = "nHMH:US-ASHBURN-AD-2"
@@ -108,7 +108,7 @@ resource "oci_core_instance" "atlas_node_01" {
   }
 }
 
-# 💻 Cómputo ARM (AlwaysFree-Ubuntu-ARM)
+# 💻 Compute ARM (AlwaysFree-Ubuntu-ARM)
 resource "oci_core_instance" "alwaysfree_ubuntu_arm" {
   compartment_id      = var.compartment_id
   availability_domain = "nHMH:US-ASHBURN-AD-1"
@@ -138,7 +138,7 @@ resource "oci_core_instance" "alwaysfree_ubuntu_arm" {
   }
 }
 
-# 💾 Almacenamiento (Existente)
+# 💾 Block Storage (Atlas-Vault-01)
 resource "oci_core_volume" "atlas_vault_01" {
   compartment_id      = var.compartment_id
   availability_domain = "nHMH:US-ASHBURN-AD-2"

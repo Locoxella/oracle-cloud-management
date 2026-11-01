@@ -14,7 +14,7 @@ cleanup() {
     local exit_code=$?
     trap - EXIT INT TERM
     echo ""
-    echo "👋 Limpiando..."
+    echo "👋 Cleaning up Bastion session..."
     if [ -n "$TUNNEL_PID" ]; then
         kill "$TUNNEL_PID" 2>/dev/null || true
     fi
@@ -29,7 +29,7 @@ SRC="$1"
 DEST="$2"
 
 if [ -z "$SRC" ] || [ -z "$DEST" ]; then
-    echo "Uso: $0 <archivo_local> <destino_remoto>"
+    echo "Usage: $0 <local_file> <remote_destination>"
     exit 1
 fi
 
@@ -45,7 +45,7 @@ function get_free_port() {
 
 LOCAL_PORT=$(get_free_port)
 
-echo "🔗 Creando sesión Bastion..."
+echo "🔗 Creating OCI Bastion port-forwarding session..."
 SESSION_JSON=$(oci bastion session create-port-forwarding \
     --bastion-id "$BASTION_ID" \
     --display-name "PortFwd_SCP_$(date +%s)" \
@@ -69,8 +69,8 @@ ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHo
 TUNNEL_PID=$!
 sleep 3
 
-echo "📦 Copiando $SRC a ubuntu@127.0.0.1:$DEST..."
+echo "📦 Transferring $SRC to ubuntu@127.0.0.1:$DEST..."
 scp -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i "$SSH_KEY_PRIV" -P "$LOCAL_PORT" "$SRC" "ubuntu@127.0.0.1:$DEST"
 
-echo "✅ Copia finalizada con éxito."
+echo "✅ File transfer completed successfully."
 exit 0

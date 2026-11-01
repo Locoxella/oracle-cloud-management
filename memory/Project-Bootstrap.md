@@ -1,22 +1,24 @@
-# 🛠️ Proyecto: Bootstrap & Disaster Recovery
+# 🛠️ Project: Bootstrap & Disaster Recovery
 
-Este proyecto centraliza la automatización necesaria para levantar toda la plataforma desde cero si fuera necesario.
+This document outlines the automation and steps required to rebuild the entire platform from zero should disaster recovery be necessary.
 
-## Herramientas
+## Tooling Stack
 
-- **Terraform / OpenTofu:** Para la infraestructura (VCN, Subnets, VMs, DBs).
-- **Ansible:** Para la configuración de los sistemas operativos y hardening de seguridad.
-- **GitOps (Atlantis):** El motor que ejecutará los cambios de forma automática.
+- **OpenTofu / Terraform:** Cloud infrastructure definition (VCN, Subnets, VMs, Storage).
+- **Ansible:** Operating system configuration, package management, and security hardening.
+- **GitOps:** The continuous delivery engine that applies declarative changes automatically.
 
-## El Repositorio de Verdad
+## Infrastructure as Code Baseline
 
-Todo lo que hagamos manualmente en la consola de Oracle debe ser "importado" a código.
+All resources established in the Oracle Cloud Console are imported into code:
 
-- [ ] **Importar VCN/Subnets:** Crear archivos `.tf` que representen `Aether-Network`.
-- [ ] **Importar Seguridad:** Código para `Aether-Guard-List`.
-- [ ] **Playbook Inicial:** Crear un script de Ansible que configure el Bastion y los usuarios en cualquier VM nueva.
+- [x] **VCN & Subnets:** Declared as `oci_core_vcn.aether_network` in `infrastructure/main.tf`.
+- [x] **Security Lists:** Declared as `oci_core_security_list.aether_guard_list`.
+- [x] **OCI Bastion:** Declared as `oci_bastion_bastion.locoxella_bastion`.
+- [x] **Instances:** Declared as `oci_core_instance.atlas_node_01` and `oci_core_instance.alwaysfree_ubuntu_arm`.
+- [x] **Block Storage:** Declared as `oci_core_volume.atlas_vault_01`.
 
-## Iniciativas Adicionales (Propuestas)
+## Operational Roadmap
 
-- **Observability Hub:** Un dashboard de **Grafana** (usando el Tier gratuito de 500M de puntos de monitoreo) para ver el estado de salud de los nodos y recibir alertas en Telegram/Email.
-- **Backups Inmutables:** Script que haga snapshots de los volúmenes y los guarde en Object Storage como "Archive Store" (muy barato/gratis).
+- **Observability Hub:** Unified telemetry with Grafana Alloy and Uptime Kuma cross-monitoring between OCI cloud nodes and local Homelab.
+- **Immutable Backups:** Snapshot retention and object storage archiving for persistent block volumes.

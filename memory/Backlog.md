@@ -1,26 +1,31 @@
-# 📋 Backlog & Status
+# 📋 Project Backlog & Status
 
-Registro de iniciativas y su estado actual (actualizado empíricamente contra OCI API).
+Live tracker of architectural initiatives and technical debt (empirically reconciled with OCI and Cloudflare APIs).
 
-## 🚀 En Ejecución (In-Progress)
+---
 
-- **[Infra] Cluster Kubernetes (K3s):** Diseño de red interna y despliegue del Server K3s en `AlwaysFree-Ubuntu-ARM`.
-- **[Infra] Hardening:** Acceso SSH exclusivo vía OCI Bastion (`connect_vm.sh`) y Cloudflare Zero Trust.
+## 🚀 Active Initiatives (In-Progress)
 
-## 📅 Próximos Pasos (To-Do)
+- **[GitOps] 100% Declarative Convergence:** GitHub Actions CI/CD with Option B ephemeral Bastion execution, OpenTofu state persistence in OCI Object Storage, and automated Gitea mirroring.
+- **[HA] Cross-Cloud Tunnel Redundancy:** Continuous auditing of Cloudflare Edge connections across AMD (`aether-tunnel`), ARM (`aether-tunnel-arm`), and Homelab (`pi-home-tunnel`).
 
-- [ ] **Database Evaluation:** Evaluar provisionamiento de una nueva DB Always Free (la `Aether-Seed-DB` ya no existe; causa no determinada).
-- [ ] **Grafana:** Configurar el conector de OCI Monitoring para ver métricas de CPU/RAM.
-- [ ] **Kubernetes:** Desplegar K3s Server en el nodo ARM y unir el nodo AMD como Worker.
+---
 
-## ✅ Completado
+## 📅 Roadmap Milestones (To-Do)
 
-- **[Hunt] Catch ARM Instance:** Instancia `AlwaysFree-Ubuntu-ARM` cazada y activa desde 06/10/2026 (2 OCPUs / 12 GB RAM).
-- **[CI/CD] Gitea Actions Runner:** Runner `gitea-runner` configurado y operativo en el nodo ARM.
-- **[Seed] Gitea Migración a ARM:** Servidor Git migrado a la instancia ARM para aprovechar los 12GB de RAM.
-- **[VPN] WireGuard Easy:** Servidor VPN activo en `Atlas-Node-01` con IP de EE.UU.
-- **[Security] Bastion Automation:** Script `connect_vm.sh` con selección automática de nodo AMD/ARM y cleanup con traps.
-- Creación de VCN y Subnets.
-- Creación de Bastion (`locoxella-bastion`).
-- Setup de Memoria y documentación en Repo.
-- Conexión de Almacenamiento Extra (50GB - `Atlas-Vault-01`).
+- [ ] **Kubernetes (K3s):** Deploy lightweight K3s server on `AlwaysFree-Ubuntu-ARM` (12 GB RAM) and join `Atlas-Node-01` as worker node.
+- [ ] **Unified Telemetry:** Configure OCI Monitoring exporter with Grafana Alloy and Prometheus for unified alerting.
+- [ ] **Always Free Autonomous Database:** Evaluate recreating an Always Free Autonomous Database if transactional data persistence requires it.
+
+---
+
+## ✅ Completed Milestones
+
+- **[GitOps] 100% GitOps Architecture:** OpenTofu + Ansible + GitHub Actions + Option B Bastion bridge and rich step summaries.
+- **[Capacity] ARM Instance Provisioned:** `AlwaysFree-Ubuntu-ARM` active with 2 OCPUs Ampere Altra and 12 GB RAM.
+- **[IaC] Infrastructure Imported:** All 6 OCI resources (VCN, Subnet, VMs, Volume, Security List, Bastion) declared in `infrastructure/main.tf` with zero diffs.
+- **[Storage] Persistent Block Volume:** 50 GB block volume (`Atlas-Vault-01`) attached to `Atlas-Node-01` at `/mnt/extra-data`.
+- **[Security] Bastion Automation:** `connect_vm.sh` and `scp_to_vm.sh` with automatic node selection and trap cleanup.
+- **[Migration] Gitea Migration to ARM:** Fully migrated to ARM node (`/opt/stacks/gitea/data`), obsolete AMD storage purged.
+- **[Network] WireGuard VPN Gateway:** Active on AMD node (`wg-easy`) routing internal VCN traffic (`10.0.0.0/16`).
+- **[Zero Trust] Cloudflare Integration:** All HTTP/WebSocket services exposed via Cloudflare Edge and protected with Google OAuth Access policies.

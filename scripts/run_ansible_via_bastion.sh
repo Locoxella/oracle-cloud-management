@@ -34,7 +34,7 @@ cleanup() {
     local exit_code=$?
     trap - EXIT INT TERM
     echo ""
-    echo "👋 [Option B] Limpiando túneles y sesiones efímeras de Bastion..."
+    echo "👋 [Option B] Cleaning up ephemeral Bastion sessions and SSH tunnels..."
     if [[ -n "$TUNNEL_AMD_PID" ]]; then
         kill "$TUNNEL_AMD_PID" 2>/dev/null || true
     fi
@@ -42,14 +42,14 @@ cleanup() {
         kill "$TUNNEL_ARM_PID" 2>/dev/null || true
     fi
     if [[ -n "$SESSION_AMD_ID" && "$SESSION_AMD_ID" != "null" ]]; then
-        echo "  🗑️ Borrando sesión Bastion AMD: $SESSION_AMD_ID"
+        echo "  🗑️ Deleting AMD Bastion session: $SESSION_AMD_ID"
         oci bastion session delete --session-id "$SESSION_AMD_ID" --force >/dev/null 2>&1 || true
     fi
     if [[ -n "$SESSION_ARM_ID" && "$SESSION_ARM_ID" != "null" ]]; then
-        echo "  🗑️ Borrando sesión Bastion ARM: $SESSION_ARM_ID"
+        echo "  🗑️ Deleting ARM Bastion session: $SESSION_ARM_ID"
         oci bastion session delete --session-id "$SESSION_ARM_ID" --force >/dev/null 2>&1 || true
     fi
-    echo "✅ Recursos efímeros liberados."
+    echo "✅ Ephemeral resources cleaned up."
     exit "$exit_code"
 }
 trap cleanup EXIT INT TERM
@@ -71,12 +71,12 @@ while [[ "$PORT_ARM" == "$PORT_AMD" ]]; do
 done
 
 echo "=================================================================="
-echo "🚀 [Option B] Levantando puente efímero OCI Bastion para Ansible"
+echo "🚀 [Option B] Establishing Ephemeral OCI Bastion Bridge for Ansible"
 echo "   AMD (10.0.0.160) -> 127.0.0.1:$PORT_AMD"
 echo "   ARM (10.0.0.200) -> 127.0.0.1:$PORT_ARM"
 echo "=================================================================="
 
-echo "[1/4] Creando sesiones en OCI Bastion..."
+echo "[1/4] Creating ephemeral port-forwarding sessions in OCI Bastion..."
 SESSION_AMD_JSON=$(oci bastion session create-port-forwarding \
     --bastion-id "$BASTION_ID" \
     --display-name "Ansible_AMD_$(date +%s)" \
@@ -95,10 +95,10 @@ SESSION_ARM_JSON=$(oci bastion session create-port-forwarding \
     --session-ttl 3600)
 SESSION_ARM_ID=$(echo "$SESSION_ARM_JSON" | jq -r '.data.id')
 
-echo "  ✓ Sesión AMD: $SESSION_AMD_ID"
-echo "  ✓ Sesión ARM: $SESSION_ARM_ID"
+echo "  ✓ AMD Session: $SESSION_AMD_ID"
+echo "  ✓ ARM Session: $SESSION_ARM_ID"
 
-echo "[2/4] Esperando a que ambas sesiones estén ACTIVE..."
+echo "[2/4] Waiting for both sessions to become ACTIVE..."
 for item in "AMD:$SESSION_AMD_ID" "ARM:$SESSION_ARM_ID"; do
     node="${item%%:*}"
     sid="${item##*:}"
@@ -107,16 +107,16 @@ for item in "AMD:$SESSION_AMD_ID" "ARM:$SESSION_ARM_ID"; do
         if [[ "$state" == "ACTIVE" ]]; then
             break
         elif [[ "$state" == "FAILED" ]]; then
-            echo "❌ La sesión de $node falló al crearse."
+            echo "❌ Bastion session for $node failed to initialize."
             exit 1
         fi
         sleep 2
     done
 done
-echo "  ✓ Ambas sesiones están ACTIVE. Esperando propagación de llaves (8s)..."
+echo "  ✓ Both sessions are ACTIVE. Waiting for key propagation (8s)..."
 sleep 8
 
-echo "[3/4] Levantando túneles SSH locales..."
+echo "[3/4] Establishing local SSH tunnels in background..."
 ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
     -i "$SSH_KEY_PRIV" -N -L "$PORT_AMD:10.0.0.160:22" -p 22 "$SESSION_AMD_ID@host.bastion.us-ashburn-1.oci.oraclecloud.com" &
 TUNNEL_AMD_PID=$!
@@ -126,9 +126,9 @@ ssh -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa -o StrictHo
 TUNNEL_ARM_PID=$!
 
 sleep 3
-echo "  ✓ Túneles locales activos."
+echo "  ✓ Local SSH tunnels established."
 
-echo "[4/4] Ejecutando Ansible a través del puente Bastion..."
+echo "[4/4] Executing Ansible playbook through Bastion bridge..."
 echo "------------------------------------------------------------------"
 ANSIBLE_CONFIG=ansible/ansible.cfg ansible-playbook "$@" \
     -e "bastion_amd_host=127.0.0.1" \
@@ -137,4 +137,4 @@ ANSIBLE_CONFIG=ansible/ansible.cfg ansible-playbook "$@" \
     -e "bastion_arm_port=$PORT_ARM"
 
 echo "------------------------------------------------------------------"
-echo "✅ Ejecución de Ansible finalizada con éxito."
+echo "✅ Ansible execution completed successfully."

@@ -1,34 +1,26 @@
-# 🍎 Proyecto: The Seed (Private Git & CI/CD)
+# 🍎 Project: The Seed (Private Git & CI/CD)
 
-Este proyecto establece el "Kilómetro 0" de toda nuestra infraestructura: un servidor Git privado con capacidades de automatización.
+This project establishes the foundation of the platform: a centralized private Git server with native CI/CD automation capabilities.
 
-## 🛠️ El Stack Elegido: Gitea / Forgejo
+## 🛠️ Selected Engine: Gitea / Forgejo
 
-He elegido **Gitea** (o su fork **Forgejo**) por las siguientes razones:
+Gitea was selected for the following reasons:
 
-1. **Eficiencia:** Está escrito en Go y consume menos de 200MB de RAM. Es perfecto para una VM AMD Micro.
-2. **Gitea Actions:** Soporta un sistema de CI/CD compatible con la sintaxis de GitHub Actions.
-3. **Todo en uno:** Incluye registro de paquetes, gestión de releases y repositorio de código.
-4. **Acceso Seguro:** Uso de **Cloudflare Tunnel** para exponer el servicio vía HTTPS sin abrir puertos públicos en Oracle Cloud.
+1. **Lightweight Footprint:** Built in Go, consuming less than 250 MB RAM.
+2. **Gitea Actions:** Provides CI/CD pipelines fully compatible with GitHub Actions workflow syntax.
+3. **All-in-One Hub:** Includes built-in package registry, release management, and issue tracking.
+4. **Zero Trust Access:** Uses Cloudflare Tunnels to publish endpoints securely without opening public listening ports on the host.
 
-## 📍 Ubicación y Almacenamiento
+## 📍 Topology & Storage
 
-- **Host Actual:** `AlwaysFree-Ubuntu-ARM` (ARM - 12GB RAM).
-- **Persistencia:** Almacenamiento local en `/opt/stacks/gitea/data`.
-- **Base de Datos:** SQLite3 (ligera y estable).
-- **Exposición:** Cloudflare Tunnel (`aether-tunnel-arm`) para HTTPS seguro sin puertos públicos.
+- **Active Host:** `AlwaysFree-Ubuntu-ARM` (ARM A1.Flex - 12 GB RAM).
+- **Persistent Data:** Local host path at `/opt/stacks/gitea/data`.
+- **Database:** SQLite3 (stable and lightweight).
+- **Ingress:** Active-Active Cloudflare Tunnel (`aether-tunnel-arm`).
 
-## 🗺️ Roadmap de "The Seed"
+## 🗺️ Completed Milestones
 
-1. [x] **Bootstrap Base:** Docker y dependencias instaladas en ambos nodos.
-2. [x] **Containerize:** Desplegar Gitea mediante Docker Compose.
-3. [x] **Runner Setup:** Configurar el runner de Gitea Actions (`gitea-runner`) con socket de Docker en el nodo ARM.
-4. [x] **Mirroring & CI:** Repositorio sincronizado y pipeline de validación activo en cada push.
-
-## 🔁 El Ciclo de Vida
-
-Una vez "The Seed" esté activo:
-
-1. Yo (el agente) o Tú (el humano) comiteamos código al Gitea privado.
-2. Gitea Actions detecta el cambio.
-3. El Runner ejecuta el Playbook de Ansible o el código de OpenTofu para aplicar los cambios a la infraestructura de Oracle.
+1. [x] **Base Bootstrap:** Docker, Compose, and core utilities configured.
+2. [x] **Containerization:** Gitea deployed via Docker Compose (`bootstrap/stacks/git/compose.yaml`).
+3. [x] **Runner Deployment:** Gitea Actions runner (`gitea-runner`) deployed with access to the Docker socket.
+4. [x] **GitOps Synchronization:** Dual-mirroring between public GitHub and private Gitea.

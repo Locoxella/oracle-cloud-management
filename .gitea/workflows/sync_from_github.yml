@@ -1,0 +1,24 @@
+name: Sync Mirror from Public GitHub
+
+on:
+  schedule:
+    # Run every 6 hours as a backup synchronization mechanism
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: "Sync from GitHub Upstream"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Local Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Fetch and Merge from GitHub
+        run: |
+          git remote add github https://github.com/Locoxella/oracle-cloud-management.git || true
+          git fetch github main
+          git reset --hard github/main
+          git push origin main --force || true

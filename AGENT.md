@@ -1,74 +1,81 @@
-# 🤖 Instrucciones para Agentes de IA (AGENT.md)
+# 🤖 AI Agent Guidelines & Context (AGENT.md)
 
-## 📌 Contexto Fundamental del Proyecto
-Este repositorio (`oracle-cloud-management`) administra la infraestructura como código (IaC), configuraciones, despliegues y documentación del ecosistema **Aether** en **Oracle Cloud Infrastructure (OCI - Always Free)**.
+## 📌 Fundamental Project Context
+This repository (`oracle-cloud-management`) manages the Infrastructure as Code (IaC), server configurations, container deployments, and operational documentation for the **Aether** ecosystem hosted in **Oracle Cloud Infrastructure (OCI - Always Free tier)**.
 
-### ⚠️ Regla de Interpretación del Entorno
-* **Punto de Referencia de Consultas:** Cuando el usuario pregunte por "la VM", "las apps que corren en la VM", "el estado de la VM" o cualquier término similar, **SE REFIERE A LAS MÁQUINAS VIRTUALES REMOTAS EN ORACLE CLOUD** (`Atlas-Node-01` AMD o `AlwaysFree-Ubuntu-ARM` ARM), **NUNCA** a la máquina local del usuario desde donde opera el agente/IDE.
+### ⚠️ Execution & Environment Interpretation Rule
+* **Target Environment Reference**: Whenever the user asks about "the VM", "running containers", "node status", or any related system inquiry, **IT ALWAYS REFERS TO THE REMOTE CLOUD VMS IN ORACLE CLOUD** (`Atlas-Node-01` AMD or `AlwaysFree-Ubuntu-ARM` ARM), **NEVER** to the user's local workstation where the agent/IDE runs.
+* **Proactive Safe Execution**: Automatically execute safe, non-destructive diagnostic and maintenance commands directly rather than asking the user to run them manually.
 
 ---
 
-## 🖥️ Topología de Nodos Remotos
+## 🖥️ Remote Node Topology
 
-El ecosistema cuenta con **dos instancias activas** en OCI:
+The infrastructure runs on **two active OCI compute instances**:
 
 1. **`Atlas-Node-01` (AMD Micro - Ubuntu):**
    * **OCID:** `ocid1.instance.oc1.iad.anuwcljtinltkcac5f3wz76gl4vpx7g6mp3lf2ofwjsjcbuoxqz4vine2wlq`
-   * **IP Privada:** `10.0.0.160` | **IP Pública:** `129.153.185.184`
-   * **Especificaciones:** 1 OCPU AMD EPYC / 1 GB RAM / 47 GB Boot Volume.
-   * **Volumen Persistente Adicional:** `/mnt/extra-data` (`Atlas-Vault-01`, 50GB).
-   * **Conexión Bastion:** `./connect_vm.sh amd` (o `./connect_vm.sh`).
+   * **Private IP:** `10.0.0.160` | **Public IP:** `129.153.185.184`
+   * **Specifications:** 1 OCPU AMD EPYC / 1 GB RAM / 47 GB Boot Volume.
+   * **Persistent Block Volume:** Mounted at `/mnt/extra-data` (`Atlas-Vault-01`, 50 GB).
+   * **Bastion Connection:** `./connect_vm.sh amd` (or `./connect_vm.sh`).
 
 2. **`AlwaysFree-Ubuntu-ARM` (ARM A1.Flex - Ubuntu):**
    * **OCID:** `ocid1.instance.oc1.iad.anuwcljsinltkcacrv222dlla7akmfmgkhwspugq6bevmfvevlvkk5ooul5q`
-   * **IP Privada:** `10.0.0.200` | **IP Pública:** `129.213.96.28`
-   * **Especificaciones:** 2 OCPUs Ampere Altra / 12 GB RAM / 47 GB Boot Volume.
-   * **Almacenamiento Local:** solo boot volume (`/dev/sda1`, 45GB útiles); sin volumen adicional.
-   * **Layout de stacks:** `/opt/stacks/{gitea,git-runner,management,network}` (verificado por SSH).
-   * **Conexión Bastion:** `./connect_vm.sh arm`.
+   * **Private IP:** `10.0.0.200` | **Public IP:** `129.213.96.28`
+   * **Specifications:** 2 OCPUs Ampere Altra / 12 GB RAM / 47 GB Boot Volume.
+   * **Local Storage:** Boot volume only (`/dev/sda1`, ~45 GB usable).
+   * **Stack Layout:** `/opt/stacks/{gitea,git-runner,management,network}`.
+   * **Bastion Connection:** `./connect_vm.sh arm`.
 
 ---
 
-## 📦 Software y Servicios Ejecutándose por Nodo
+## 📦 Running Workloads & Services
 
-### En Nodo ARM (`AlwaysFree-Ubuntu-ARM` - 10.0.0.200):
+### On ARM Node (`AlwaysFree-Ubuntu-ARM` - 10.0.0.200):
 1. **Gitea (Forgejo):**
-   * **Contenedor:** `aether-git-seed`
-   * **Propósito:** Servidor privado centralizado de Git y gestor de repositorios.
-   * **Puertos:** HTTP `3000`, SSH `2222`.
-   * **Base de datos:** SQLite3 (verificado). Almacenamiento: `/opt/stacks/gitea/data` (340 MB, 8 repositorios activos).
-   * **Sincronización IaC:** Alineado en `bootstrap/stacks/git/compose.yaml`; los restos obsoletos en `/mnt/extra-data/gitea` del nodo AMD fueron eliminados tras verificar la migración.
+   * **Container:** `aether-git-seed`
+   * **Role:** Central private Git server and package registry.
+   * **Ports:** HTTP `3000`, SSH `2222`.
+   * **Data Path:** `/opt/stacks/gitea/data` (SQLite3).
    * **URL:** `https://git.solucionesaustral.com`
 2. **Gitea Actions Runner:**
-   * **Contenedor:** `gitea-runner`
-   * **Propósito:** Runner de CI/CD nativo de Gitea Actions conectado a Docker.
-3. **Cloudflare Tunnel ARM:**
-   * **Contenedor:** `aether-tunnel-arm`
-   * **Propósito:** Expone Gitea HTTP/SSH de forma segura hacia Cloudflare sin abrir puertos entrantes.
+   * **Container:** `gitea-runner`
+   * **Role:** CI/CD container runner attached to Docker socket.
+3. **Cloudflare Tunnel (ARM HA Replica):**
+   * **Container:** `aether-tunnel-arm`
+   * **Role:** Active-Active HA ingress connected to Cloudflare Edge.
 4. **Dockge (ARM):**
-   * **Contenedor:** `aether-dockge` (Puerto `5001`).
-   * **Propósito:** Gestor visual de compose stacks en el nodo ARM (`/opt/stacks`, datos en `/opt/stacks/management/dockge-data`). No hay `autoheal` en este nodo.
+   * **Container:** `aether-dockge` (Port `5001`).
+   * **Role:** Compose stack manager for `/opt/stacks`.
 
-### En Nodo AMD (`Atlas-Node-01` - 10.0.0.160):
+### On AMD Node (`Atlas-Node-01` - 10.0.0.160):
 1. **WireGuard Easy (`wg-easy`):**
-   * **Contenedor:** `wg-easy`
-   * **Propósito:** Servidor VPN: acceso seguro a la subred interna `10.0.0.0/16` y salida a internet.
-   * **Puerto UDP:** `51820` (abierto en Security List e iptables).
+   * **Container:** `wg-easy`
+   * **Role:** VPN gateway providing secure access to the `10.0.0.0/16` subnet and US egress.
+   * **Port:** UDP `51820` (open in OCI Security List & iptables).
 2. **Dockge (AMD):**
-   * **Contenedor:** `aether-dockge` (Puerto `5001`, URL: `https://dockge.solucionesaustral.com` protegida por Cloudflare Access).
-   * **Stacks:** Gestiona `/mnt/extra-data/stacks` e infraestructura base en `/mnt/extra-data/infrastructure`.
-3. **Cloudflare Tunnel AMD:**
-   * **Contenedor:** `aether-tunnel`
-4. **Autoheal:**
-   * **Contenedor:** `aether-autoheal` (Reinicia contenedores no saludables).
-5. **Subastas App:**
-   * **Contenedor:** `subastas-app` (Puerto `8000`).
-6. **Firewall Dinámico SSH Gitea:**
-   * **Servicio:** `gitea-firewall-sync.timer` (Sincroniza IP dinámica DDNS para filtrado de SSH).
+   * **Container:** `aether-dockge` (Port `5001`).
+   * **Role:** Stack manager for `/mnt/extra-data/stacks` and `/mnt/extra-data/infrastructure`.
+   * **URL:** `https://dockge.solucionesaustral.com` (Protected by Cloudflare Zero Trust).
+3. **Cloudflare Tunnel (AMD HA Replica):**
+   * **Container:** `aether-tunnel`
+   * **Role:** Active-Active HA ingress (4 edge connections).
+4. **Subastas Web Application:**
+   * **Container:** `subastas-app` (Port `8000`).
+   * **URL:** `https://subastas.solucionesaustral.com`
+5. **Autoheal:**
+   * **Container:** `aether-autoheal` (Monitors and restarts unhealthy containers).
 
 ---
 
-## 🛠️ Modus Operandi y Reglas para el Agente
-1. Al responder preguntas sobre procesos, puertos, almacenamiento o salud de aplicaciones en la VM, haz referencia a estos servicios orquestados en `Atlas-Node-01`.
-2. Para ejecutar comandos o diagnósticos en la VM, utiliza los scripts de conexión/túnel provistos en el proyecto (`connect_vm.sh`, OCI Bastion o Cloudflare Tunnels).
-3. **Regla de Disaster Recovery e IaC:** Siempre que se agreguen, modifiquen o creen configuraciones, servicios en segundo plano, scripts o dependencias en la VM en vivo, **SE DEBEN ACTUALIZAR EN PARALELO LOS ARCHIVOS DE DESPLIEGUE Y BOOTSTRAP** (`bootstrap/setup_node.sh`, scripts de inicialización y `infrastructure/`) para garantizar que la VM y todos sus servicios puedan reconstruirse de 0 ante un desastre sin requerir configuración manual adicional.
+## 🔄 GitOps Operations Workflow
+1. Changes to IaC or compose stacks are made in this repository.
+2. The unified verification suite (`./scripts/verify_infra.sh`) must pass dry-run checks.
+3. When pushed to `main`, GitHub Actions runs the Option B convergence pipeline:
+   - Authenticates via OCI CLI and private SSH key.
+   - Spins up ephemeral OCI Bastion sessions and tunnels.
+   - Converges targets with Ansible (`ansible/playbooks/site.yml`).
+   - Executes empirical post-apply health checks.
+   - Persists state in OCI Object Storage bucket `Aether-Infra-State`.
+   - Automatically mirrors the repository to private Gitea.
