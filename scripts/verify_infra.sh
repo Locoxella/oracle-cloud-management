@@ -92,11 +92,11 @@ echo "🏗️  [5/6] OpenTofu / Terraform Formatting & Validation (Dry-Run)"
 echo "=================================================================="
 if command -v tofu >/dev/null 2>&1; then
     tofu fmt -check infrastructure/
-    (cd infrastructure && tofu validate)
+    (cd infrastructure && tofu init -backend=false && tofu validate)
     echo "✅ OpenTofu configuration formatted and valid."
 elif command -v terraform >/dev/null 2>&1; then
     terraform fmt -check infrastructure/
-    (cd infrastructure && terraform validate)
+    (cd infrastructure && terraform init -backend=false && terraform validate)
     echo "✅ Terraform configuration formatted and valid."
 else
     echo "⚠️ Neither tofu nor terraform binary found in PATH (skipping CLI check)."
