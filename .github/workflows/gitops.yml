@@ -123,10 +123,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install Runtime Dependencies (OCI CLI, Ansible & Requests)
+      - name: Install Base Python Verification Dependencies
+        run: |
+          python3 -m pip install --upgrade pip pyyaml requests
+
+      - name: Install Runtime Cloud & Configuration Tools (OCI CLI & Ansible)
         if: steps.filter.outputs.tofu == 'true' || steps.filter.outputs.ansible == 'true'
         run: |
-          python3 -m pip install --upgrade pip oci-cli ansible-core pyyaml requests
+          python3 -m pip install oci-cli ansible-core
+
 
       - name: Set up OpenTofu
         if: steps.filter.outputs.tofu == 'true'
