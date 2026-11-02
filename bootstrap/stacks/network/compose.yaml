@@ -1,6 +1,6 @@
 services:
   cloudflared:
-    image: cloudflare/cloudflared:latest
+    image: cloudflare/cloudflared:2026.10.7
     container_name: aether-tunnel
     restart: always
     command: tunnel run

@@ -21,6 +21,16 @@
         dest: /opt/stacks/gitea/compose.reference.yaml
         mode: "0644"
 
+    - name: Synchronize Network Compose stack definition on ARM
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../bootstrap/stacks/network/compose.yaml"
+        dest: /opt/stacks/network/compose.yaml
+        mode: "0644"
+
+    - name: Converge Network Compose stack on ARM
+      ansible.builtin.command: docker compose -f /opt/stacks/network/compose.yaml up -d --remove-orphans
+      changed_when: true
+
 - name: Converge OCI AMD Node (Atlas-Node-01)
   hosts: atlas_amd
   become: true
@@ -59,6 +69,16 @@
         src: "{{ playbook_dir }}/../../bootstrap/stacks/subastas/compose.yaml"
         dest: /mnt/extra-data/stacks/subastas/compose.yaml
         mode: "0644"
+
+    - name: Synchronize Network Compose stack definition on AMD
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../../bootstrap/stacks/network/compose.yaml"
+        dest: /mnt/extra-data/stacks/network/compose.yaml
+        mode: "0644"
+
+    - name: Converge Network Compose stack on AMD
+      ansible.builtin.command: docker compose -f /mnt/extra-data/stacks/network/compose.yaml up -d --remove-orphans
+      changed_when: true
 
     - name: Ensure dynamic Gitea SSH firewall sync timer is enabled and active
       ansible.builtin.systemd:
