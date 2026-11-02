@@ -61,6 +61,13 @@ jobs:
           except Exception as e:
               prs = []
 
+          try:
+              issues_json = subprocess.check_output(['gh', 'issue', 'list', '--search', 'Dependency Dashboard in:title', '--state', 'open', '--json', 'number,url'], env=os.environ).decode('utf-8')
+              issues = json.loads(issues_json)
+              dashboard_md = f"[Issue #{issues[0]['number']}]({issues[0]['url']})" if issues else "Not found"
+          except Exception:
+              dashboard_md = "[Issues](https://github.com/" + os.environ.get('GITHUB_REPOSITORY', '') + "/issues)"
+
           if prs:
               report.append(f'### 📦 Active & Newly Generated Pull Requests ({len(prs)})\n')
               report.append('| PR # | Title | Target Branch | Link |')
@@ -74,7 +81,7 @@ jobs:
               notice_msg = 'Renovate scan completed: All dependencies are up to date.'
 
           report.append('\n### 📋 Interactive Control Panel')
-          report.append('- **Dependency Dashboard:** [Issue #3](https://github.com/' + os.environ.get('GITHUB_REPOSITORY', '') + '/issues/3) *(Click checkboxes in this issue to force immediate updates)*')
+          report.append(f'- **Dependency Dashboard:** {dashboard_md} *(Click checkboxes in this issue to force immediate updates)*')
           report.append('- **All Pull Requests:** [View PR List](https://github.com/' + os.environ.get('GITHUB_REPOSITORY', '') + '/pulls)\n')
 
           full_report = '\n'.join(report)
