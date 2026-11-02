@@ -26,8 +26,7 @@
       "automerge": false
     },
     {
-      "matchPackageNames": ["python"],
-      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["python", "actions/python-versions"],
       "allowedVersions": "<3.14",
       "description": "Restricts runner Python to stable versions (<3.14) due to Ansible dataclasses._is_type incompatibility. Tracked in Issue #13."
     }
