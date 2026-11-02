@@ -1,0 +1,16 @@
+services:
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.7
+    container_name: aether-tunnel-arm
+    restart: always
+    command: tunnel run
+    environment:
+      TUNNEL_TOKEN: "${TUNNEL_TOKEN:-eyJhIjogIjJhNDkyNzhkYjdiYTkyMDdjMDliZTlkMmMzZTk2NjlhIiwgInQiOiAiNTU3YjEyMGUtNTUzYi00MmY1LWJjNjUtZDJmZmI5ODAwZWE2IiwgInMiOiAiWUpmMDNFajdmejkwalNHTWRpQjNQeVJVcmhDaDQ1MkJ1OVFiOGJpdWFPUT0ifQ==}"
+    labels:
+      - "autoheal=true"
+    healthcheck:
+      test: ["CMD", "cloudflared", "--version"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s

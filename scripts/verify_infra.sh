@@ -60,6 +60,7 @@ if command -v docker >/dev/null 2>&1; then
     for compose_file in \
         bootstrap/infrastructure/management/compose.yaml \
         bootstrap/stacks/network/compose.yaml \
+        bootstrap/stacks/network/compose.arm.yaml \
         bootstrap/stacks/git/compose.yaml \
         bootstrap/stacks/subastas/compose.yaml \
         archive/hunters/arm-hunter/docker-compose.yml; do
