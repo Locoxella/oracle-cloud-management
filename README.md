@@ -2,8 +2,12 @@
 
 [![GitOps Pipeline](https://github.com/Locoxella/oracle-cloud-management/actions/workflows/gitops.yml/badge.svg)](https://github.com/Locoxella/oracle-cloud-management/actions/workflows/gitops.yml)
 [![Gitea Validation](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions/workflows/validation.yml/badge.svg?branch=main)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions)
+[![Gitea Mirror Sync](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions/workflows/sync_from_github.yml/badge.svg?branch=main)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions)
+[![Gitea Manual GitOps](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions/workflows/gitops_manual.yml/badge.svg?branch=main)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions)
 [![OpenTofu Version](https://img.shields.io/github/v/tag/Locoxella/oracle-cloud-management?filter=tofu-v*&label=OpenTofu&color=blue)](https://github.com/Locoxella/oracle-cloud-management/tags)
 [![Ansible Version](https://img.shields.io/github/v/tag/Locoxella/oracle-cloud-management?filter=ansible-v*&label=Ansible&color=red)](https://github.com/Locoxella/oracle-cloud-management/tags)
+[![GitHub Issues](https://img.shields.io/github/issues/Locoxella/oracle-cloud-management)](https://github.com/Locoxella/oracle-cloud-management/issues)
+[![Gitea Issues](https://img.shields.io/gitea/issues/open/locoxella/oracle-cloud-management?gitea_url=https%3A%2F%2Fgit.solucionesaustral.com)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/issues)
 [![Gitea Mirror](https://img.shields.io/badge/Gitea-Private_Mirror-green.svg)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management)
 [![Cloudflare Zero Trust](https://img.shields.io/badge/Security-Cloudflare_Zero_Trust-orange.svg)](https://www.cloudflare.com/zero-trust/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
