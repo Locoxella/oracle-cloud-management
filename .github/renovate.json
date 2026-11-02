@@ -28,5 +28,5 @@
     }
   ],
   "schedule": ["before 6am on monday"],
-  "timezone": "America/Santiago"
+  "timezone": "America/Argentina/Buenos_Aires"
 }
