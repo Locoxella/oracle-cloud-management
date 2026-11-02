@@ -30,7 +30,6 @@ jobs:
 
       - name: Generate Renovate App Token
         id: app-token
-        if: ${{ secrets.APPLICATION_ID != '' }}
         uses: actions/create-github-app-token@v3.3.0
         with:
           app-id: ${{ secrets.APPLICATION_ID }}
