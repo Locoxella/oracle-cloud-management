@@ -1,0 +1,32 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":semanticCommits",
+    ":separateMultipleMajorReleases"
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "groupName": "Docker Compose images",
+      "automerge": false
+    },
+    {
+      "matchDatasources": ["terraform-provider"],
+      "groupName": "OpenTofu providers",
+      "automerge": false
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions dependencies",
+      "automerge": true
+    },
+    {
+      "matchManagers": ["pip_requirements", "pipfile", "pyproject"],
+      "groupName": "Python dependencies",
+      "automerge": false
+    }
+  ],
+  "schedule": ["before 6am on monday"],
+  "timezone": "America/Santiago"
+}
