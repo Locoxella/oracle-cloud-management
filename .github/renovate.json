@@ -7,13 +7,13 @@
   ],
   "packageRules": [
     {
-      "matchDatasources": ["docker"],
+      "matchManagers": ["docker-compose"],
       "groupName": "Docker Compose images",
       "automerge": false
     },
     {
-      "matchDatasources": ["terraform-provider"],
-      "groupName": "OpenTofu providers",
+      "matchManagers": ["terraform"],
+      "groupName": "OpenTofu & Terraform providers",
       "automerge": false
     },
     {
@@ -22,7 +22,7 @@
       "automerge": true
     },
     {
-      "matchManagers": ["pip_requirements", "pipfile", "pyproject"],
+      "matchLanguages": ["python"],
       "groupName": "Python dependencies",
       "automerge": false
     }
