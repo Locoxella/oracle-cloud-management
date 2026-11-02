@@ -43,7 +43,7 @@ Operating in a public GitHub repository requires four non-negotiable security bo
      if: github.repository_owner == 'locoxella' && (github.actor == 'locoxella' || github.triggering_actor == 'locoxella')
      ```
    - Pull requests from external contributors are restricted to unprivileged dry-run validation.
-3. **Option B Runner Architecture:**
+3. **Ephemeral Bastion GitOps Architecture:**
    - GitHub-Hosted runners create ephemeral OCI Bastion sessions via `oci bastion session create-port-forwarding`, execute playbooks over dynamic SSH tunnels, and cleanly terminate all connections on exit traps.
 4. **Decoupled State Storage:**
    - OpenTofu state is synchronized with OCI Object Storage bucket `Aether-Infra-State` (Namespace: `idsbz3qyzayx`).

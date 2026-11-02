@@ -6,7 +6,7 @@ Live tracker of architectural initiatives and technical debt (empirically reconc
 
 ## 🚀 Active Initiatives (In-Progress)
 
-- **[GitOps] 100% Declarative Convergence:** GitHub Actions CI/CD with Option B ephemeral Bastion execution, OpenTofu state persistence in OCI Object Storage, and automated Gitea mirroring.
+- **[GitOps] 100% Declarative Convergence:** GitHub Actions CI/CD with Ephemeral Bastion Bridge execution, OpenTofu state persistence in OCI Object Storage, and automated Gitea mirroring.
 - **[HA] Cross-Cloud Tunnel Redundancy:** Continuous auditing of Cloudflare Edge connections across AMD (`aether-tunnel`), ARM (`aether-tunnel-arm`), and Homelab (`pi-home-tunnel`).
 
 ---
@@ -21,7 +21,7 @@ Live tracker of architectural initiatives and technical debt (empirically reconc
 
 ## ✅ Completed Milestones
 
-- **[GitOps] 100% GitOps Architecture:** OpenTofu + Ansible + GitHub Actions + Option B Bastion bridge and rich step summaries.
+- **[GitOps] 100% GitOps Architecture:** OpenTofu + Ansible + GitHub Actions + Ephemeral Bastion Bridge and rich step summaries.
 - **[Capacity] ARM Instance Provisioned:** `AlwaysFree-Ubuntu-ARM` active with 2 OCPUs Ampere Altra and 12 GB RAM.
 - **[IaC] Infrastructure Imported:** All 6 OCI resources (VCN, Subnet, VMs, Volume, Security List, Bastion) declared in `infrastructure/main.tf` with zero diffs.
 - **[Storage] Persistent Block Volume:** 50 GB block volume (`Atlas-Vault-01`) attached to `Atlas-Node-01` at `/mnt/extra-data`.

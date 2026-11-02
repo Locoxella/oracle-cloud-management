@@ -70,7 +70,7 @@ flowchart TD
 
 ## 🚀 Key Architectural Pillars
 
-### 1. 100% GitOps with Ephemeral Bastion Bridge (Option B)
+### 1. 100% GitOps with Ephemeral Bastion Bridge
 
 - **Zero Circular Dependencies**: Computes are provisioned and converged from external GitHub-Hosted runners rather than running a self-hosted agent on the same target virtual machine being configured.
 - **Dynamic Port Forwarding**: The GitHub Actions runner dynamically requests an ephemeral port-forwarding session from the OCI Bastion service (`locoxella-bastion`), binds local random ports, and routes Ansible playbooks through SSH `ProxyCommand`.

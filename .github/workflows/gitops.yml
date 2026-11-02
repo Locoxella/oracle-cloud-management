@@ -186,7 +186,7 @@ jobs:
           tofu -chdir=infrastructure init -upgrade
           tofu -chdir=infrastructure plan
 
-      - name: Execute Option B (Ansible Convergence via Ephemeral OCI Bastion)
+      - name: Converge Compute Nodes via Ephemeral OCI Bastion & Ansible
         if: steps.filter.outputs.ansible == 'true'
         run: |
           chmod +x scripts/run_ansible_via_bastion.sh

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Option B: Run Ansible playbooks via Ephemeral OCI Bastion Port-Forwarding
+# Run Ansible playbooks via Ephemeral OCI Bastion Port-Forwarding
 # Creates temporary port-forwarding sessions, opens local SSH tunnels, runs
 # Ansible against localhost:port, and automatically tears down tunnels and
 # Bastion sessions on completion (or on interruption via trap).
@@ -34,7 +34,7 @@ cleanup() {
     local exit_code=$?
     trap - EXIT INT TERM
     echo ""
-    echo "👋 [Option B] Cleaning up ephemeral Bastion sessions and SSH tunnels..."
+    echo "👋 Cleaning up ephemeral Bastion sessions and SSH tunnels..."
     if [[ -n "$TUNNEL_AMD_PID" ]]; then
         kill "$TUNNEL_AMD_PID" 2>/dev/null || true
     fi
@@ -71,7 +71,7 @@ while [[ "$PORT_ARM" == "$PORT_AMD" ]]; do
 done
 
 echo "=================================================================="
-echo "🚀 [Option B] Establishing Ephemeral OCI Bastion Bridge for Ansible"
+echo "🚀 Establishing Ephemeral OCI Bastion Bridge for Ansible"
 echo "   AMD (10.0.0.160) -> 127.0.0.1:$PORT_AMD"
 echo "   ARM (10.0.0.200) -> 127.0.0.1:$PORT_ARM"
 echo "=================================================================="

@@ -37,7 +37,7 @@ This directory contains architectural specifications, operational runbooks, and 
 ## 📚 Technical Documentation Index
 
 - **[Resource Inventory (Inventory.md)](Inventory.md):** Always Free tier quotas, allocation breakdown, and remaining capacity.
-- **[GitOps Architecture (GitOps.md)](GitOps.md):** End-to-end GitOps workflow with Option B ephemeral Bastion execution.
+- **[GitOps Architecture (GitOps.md)](GitOps.md):** End-to-end GitOps workflow with Ephemeral Bastion Bridge execution.
 - **[Network Architecture (Network.md)](Network.md):** VCN routing, Security Lists, and subnets.
 - **[Cloudflare Zero Trust (Cloudflare.md)](Cloudflare.md):** Tunnel HA topology and Access policies.
 - **[Troubleshooting Runbook (Troubleshooting.md)](Troubleshooting.md):** Diagnostic playbooks and disaster recovery steps.
