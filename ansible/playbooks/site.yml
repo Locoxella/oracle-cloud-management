@@ -21,15 +21,11 @@
         dest: /opt/stacks/gitea/compose.reference.yaml
         mode: "0644"
 
-    - name: Synchronize Network Compose stack definition on ARM
+    - name: Synchronize AMD Network Compose reference on ARM (not deployed)
       ansible.builtin.copy:
         src: "{{ playbook_dir }}/../../bootstrap/stacks/network/compose.yaml"
-        dest: /opt/stacks/network/compose.yaml
+        dest: /opt/stacks/network/compose.reference.yaml
         mode: "0644"
-
-    - name: Converge Network Compose stack on ARM
-      ansible.builtin.command: docker compose -f /opt/stacks/network/compose.yaml up -d --remove-orphans
-      changed_when: true
 
 - name: Converge OCI AMD Node (Atlas-Node-01)
   hosts: atlas_amd
@@ -75,6 +71,17 @@
         src: "{{ playbook_dir }}/../../bootstrap/stacks/network/compose.yaml"
         dest: /mnt/extra-data/stacks/network/compose.yaml
         mode: "0644"
+
+    - name: Inspect shared Docker network on AMD
+      ansible.builtin.command: docker network ls --filter name=^aether-net$ --quiet
+      register: aether_network
+      changed_when: false
+      check_mode: false
+
+    - name: Create shared Docker network on AMD if missing
+      ansible.builtin.command: docker network create aether-net
+      when: aether_network.stdout | trim == ''
+      changed_when: true
 
     - name: Converge Network Compose stack on AMD
       ansible.builtin.command: docker compose -f /mnt/extra-data/stacks/network/compose.yaml up -d --remove-orphans
