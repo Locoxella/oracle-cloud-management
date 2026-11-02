@@ -94,3 +94,12 @@ The infrastructure runs on **two active OCI compute instances**:
   * **STRICTLY MANUAL (`workflow_dispatch` only)**.
   * Never triggers cloud provisioning or Ansible configuration automatically in Gitea to prevent concurrent or duplicate runs with GitHub.
   * Allows selecting execution target (`all`, `tofu`, `ansible`) in emergency scenarios where GitHub is unavailable.
+
+---
+## Language, Token Optimization & Agent Directives
+- **Operating Principle & Token Efficiency**: English is strictly mandatory across all agent operations to preserve token budgets and avoid sub-word tokenization overhead.
+- **Language Boundaries**:
+  - **Rules, Skills & Prompts**: Strictly English.
+  - **Internal Reasoning & Thoughts**: Strictly English (agents must never reason in Spanish).
+  - **Documentation & Commits**: Strictly English (`README.md`, `docs/`, code comments, commit messages).
+  - **User Interactions**: Default to English in chat for maximum conciseness and token economy. Only reply in Spanish if the user explicitly requests Spanish.
