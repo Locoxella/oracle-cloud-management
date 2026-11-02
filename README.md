@@ -1,12 +1,12 @@
 # 🌌 Oracle Cloud Infrastructure: Management & GitOps (Aether)
 
 [![GitOps Pipeline](https://github.com/Locoxella/oracle-cloud-management/actions/workflows/gitops.yml/badge.svg)](https://github.com/Locoxella/oracle-cloud-management/actions/workflows/gitops.yml)
+[![Gitea Validation](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions/workflows/validation.yml/badge.svg?branch=main)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management/actions)
 [![OpenTofu Version](https://img.shields.io/github/v/tag/Locoxella/oracle-cloud-management?filter=tofu-v*&label=OpenTofu&color=blue)](https://github.com/Locoxella/oracle-cloud-management/tags)
 [![Ansible Version](https://img.shields.io/github/v/tag/Locoxella/oracle-cloud-management?filter=ansible-v*&label=Ansible&color=red)](https://github.com/Locoxella/oracle-cloud-management/tags)
 [![Gitea Mirror](https://img.shields.io/badge/Gitea-Private_Mirror-green.svg)](https://git.solucionesaustral.com/locoxella/oracle-cloud-management)
 [![Cloudflare Zero Trust](https://img.shields.io/badge/Security-Cloudflare_Zero_Trust-orange.svg)](https://www.cloudflare.com/zero-trust/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 
 > [!NOTE]
 > **Personal Infrastructure Showcase**: This repository contains the Infrastructure as Code (IaC), Configuration as Code (CaC), and automated GitOps CI/CD pipelines used to maintain **my personal infrastructure** across Oracle Cloud (OCI Always Free tier), Cloudflare Zero Trust Edge, and my local Homelab.
@@ -67,20 +67,24 @@ flowchart TD
 ## 🚀 Key Architectural Pillars
 
 ### 1. 100% GitOps with Ephemeral Bastion Bridge (Option B)
+
 - **Zero Circular Dependencies**: Computes are provisioned and converged from external GitHub-Hosted runners rather than running a self-hosted agent on the same target virtual machine being configured.
 - **Dynamic Port Forwarding**: The GitHub Actions runner dynamically requests an ephemeral port-forwarding session from the OCI Bastion service (`locoxella-bastion`), binds local random ports, and routes Ansible playbooks through SSH `ProxyCommand`.
 - **Trap-Enforced Cleanup**: At the end of the playbook (or upon interruption), signal handlers cleanly tear down local SSH tunnels and destroy OCI Bastion sessions with `oci bastion session delete --force`. Zero SSH ports are left exposed to the public internet.
 
 ### 2. High Availability Cloudflare Zero Trust Ingress
+
 - **Active-Active Tunnel (`aether-tunnel`)**: Runs concurrently across both `AlwaysFree-Ubuntu-ARM` and `Atlas-Node-01`, providing 8 active connections to the Cloudflare Edge network with automatic failover and internal subnet routing.
 - **Independent Homelab Tunnel (`pi-home-tunnel`)**: Ensures direct, zero-trust remote access to homelab services (`dockge-pi.solucionesaustral.com`) even during cloud maintenance windows.
 - **Identity-Aware Access**: Administrative endpoints (Dockge manager, WireGuard web dashboard) require multi-factor authentication via Google Workspace OAuth identity provider before reaching backend services.
 
 ### 3. Decoupled Cloud-Native State Management
+
 - OpenTofu remote state (`terraform.tfstate`) is backed up and versioned in OCI Object Storage (`Aether-Infra-State` bucket, namespace `idsbz3qyzayx`).
 - State files are strictly ignored from Git and synced exclusively at pipeline execution time.
 
 ### 4. Continuous Repository Mirroring (GitHub ↔ Gitea)
+
 - **GitHub (`Locoxella/oracle-cloud-management`)**: Acts as the primary public GitOps source of truth.
 - **Gitea (`git.solucionesaustral.com`)**: Operates as a centralized private backup and package registry.
 - Commits pushed to GitHub are automatically mirrored to the private Gitea instance at the end of every successful CI/CD run.
@@ -91,15 +95,15 @@ flowchart TD
 
 | Node Name | Architecture & Shape | Resources | Network IP | Primary Workloads |
 | :--- | :--- | :--- | :--- | :--- |
-| **`AlwaysFree-Ubuntu-ARM`** | Ampere Altra (`VM.Standard.A1.Flex`) | 2 OCPU / 12 GB RAM / 47 GB Boot | `10.0.0.200` (Private)<br/>`129.213.96.28` (Public) | • Gitea Forgejo (`:3000`, `:2222`)<br/>• Gitea Actions Runner<br/>• HA Cloudflare Tunnel (ARM)<br/>• Dockge ARM (`:5001`) |
-| **`Atlas-Node-01`** | AMD EPYC (`VM.Standard.E2.1.Micro`) | 1 OCPU / 1 GB RAM / 47 GB Boot + 50 GB Vault | `10.0.0.160` (Private)<br/>`129.153.185.184` (Public) | • WireGuard Easy VPN (`:51820 UDP`, `:51821`)<br/>• Subastas Web Application<br/>• Dockge AMD & Autoheal<br/>• HA Cloudflare Tunnel (AMD) |
-| **`raspberry_pi`** | ARM Cortex-A72 (Raspberry Pi 4) | 4 Cores / 8 GB RAM / 240 GB SSD | `10.0.0.75` (LAN / WG) | • CasaOS Ecosystem<br/>• Grafana Alloy Telemetry<br/>• Dedicated Homelab Cloudflare Tunnel |
+| **`AlwaysFree-Ubuntu-ARM`** | Ampere Altra (`VM.Standard.A1.Flex`) | 2 OCPU / 12 GB RAM / 47 GB Boot | `10.0.0.200` (Private) · `129.213.96.28` (Public) | • Gitea Forgejo (`:3000`, `:2222`) • Gitea Actions Runner • HA Cloudflare Tunnel (ARM) • Dockge ARM (`:5001`) |
+| **`Atlas-Node-01`** | AMD EPYC (`VM.Standard.E2.1.Micro`) | 1 OCPU / 1 GB RAM / 47 GB Boot + 50 GB Vault | `10.0.0.160` (Private) · `129.153.185.184` (Public) | • WireGuard Easy VPN (`:51820 UDP`, `:51821`) • Subastas Web Application • Dockge AMD & Autoheal • HA Cloudflare Tunnel (AMD) |
+| **`raspberry_pi`** | ARM Cortex-A72 (Raspberry Pi 4) | 4 Cores / 8 GB RAM / 240 GB SSD | `10.0.0.75` (LAN / WG) | • CasaOS Ecosystem • Grafana Alloy Telemetry • Dedicated Homelab Cloudflare Tunnel |
 
 ---
 
 ## 📁 Repository Directory Structure
 
-```
+```text
 oracle-cloud-management/
 ├── .github/
 │   └── workflows/
@@ -146,9 +150,11 @@ This repository adheres to strict open-source security hygiene:
    - Historical commits are fully cleansed and verified by GitHub Push Protection.
 2. **Owner-Gated Execution**:
    - Deployment and convergence steps in GitHub Actions are strictly conditioned:
+
      ```yaml
      if: github.repository_owner == 'locoxella' && (github.actor == 'locoxella' || github.triggering_actor == 'locoxella')
      ```
+
    - Pull requests from forks only execute read-only syntax checks and dry-run linting without access to repository secrets.
 3. **Encrypted Secrets**:
    - Production secrets (`OCI_CLI_*`, `SSH_PRIVATE_KEY`, `CLOUDFLARE_API_TOKEN`) reside exclusively in encrypted GitHub Secrets.
