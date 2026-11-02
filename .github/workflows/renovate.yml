@@ -48,8 +48,9 @@ jobs:
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
-          python3 -c "
+          python3 - << 'EOF'
           import subprocess, json, os
 
           report = []
@@ -58,7 +59,7 @@ jobs:
           try:
               prs_json = subprocess.check_output(['gh', 'pr', 'list', '--json', 'number,title,url,headRefName'], env=os.environ).decode('utf-8')
               prs = json.loads(prs_json)
-          except Exception as e:
+          except Exception:
               prs = []
 
           try:
@@ -66,14 +67,14 @@ jobs:
               issues = json.loads(issues_json)
               dashboard_md = f"[Issue #{issues[0]['number']}]({issues[0]['url']})" if issues else "Not found"
           except Exception:
-              dashboard_md = "[Issues](https://github.com/" + os.environ.get('GITHUB_REPOSITORY', '') + "/issues)"
+              dashboard_md = f"[Issues](https://github.com/{os.environ.get('GH_REPO', '')}/issues)"
 
           if prs:
               report.append(f'### 📦 Active & Newly Generated Pull Requests ({len(prs)})\n')
               report.append('| PR # | Title | Target Branch | Link |')
               report.append('| :---: | :--- | :--- | :--- |')
               for pr in prs:
-                  report.append(f'| **#{pr[\"number\"]}** | {pr[\"title\"]} | \`{pr[\"headRefName\"]}\` | [View PR #{pr[\"number\"]}]({pr[\"url\"]}) |')
+                  report.append(f"| **#{pr['number']}** | {pr['title']} | `{pr['headRefName']}` | [View PR #{pr['number']}]({pr['url']}) |")
               notice_msg = f'Renovate generated/updated {len(prs)} Pull Requests ready for review.'
           else:
               report.append('### 📦 Pull Requests\n')
@@ -82,7 +83,7 @@ jobs:
 
           report.append('\n### 📋 Interactive Control Panel')
           report.append(f'- **Dependency Dashboard:** {dashboard_md} *(Click checkboxes in this issue to force immediate updates)*')
-          report.append('- **All Pull Requests:** [View PR List](https://github.com/' + os.environ.get('GITHUB_REPOSITORY', '') + '/pulls)\n')
+          report.append(f"- **All Pull Requests:** [View PR List](https://github.com/{os.environ.get('GH_REPO', '')}/pulls)\n")
 
           full_report = '\n'.join(report)
 
@@ -97,4 +98,4 @@ jobs:
           if summary_path:
               with open(summary_path, 'a', encoding='utf-8') as f:
                   f.write(full_report + '\n')
-          "
+          EOF
