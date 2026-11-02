@@ -37,30 +37,50 @@ jobs:
           RENOVATE_REPOSITORIES: ${{ github.repository }}
           LOG_LEVEL: ${{ inputs.log_level || 'info' }}
 
-      - name: Publish Visual Renovate Summary & Dashboard Link
+      - name: Generate Dynamic Runtime Summary & Dashboard Link
         if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REPORT="## 🤖 Renovate Bot Lifecycle & Dependency Scan Summary
+          python3 -c "
+          import subprocess, json, os
 
-          | Execution Dimension | Configuration & Outcome |
-          | :--- | :--- |
-          | 🎯 **Target Repository** | \`${{ github.repository }}\` |
-          | 🕒 **Execution Schedule** | Weekly Mondays at 06:00 AM (America/Argentina/Buenos_Aires) |
-          | 📦 **Scanned Stacks** | Docker Compose (\`compose.yaml\`), OpenTofu (\`*.tf\`), GitHub Actions, Python |
-          | 📋 **Interactive Dashboard** | [Dependency Dashboard #3](https://github.com/${{ github.repository }}/issues/3) |
-          | 🚦 **Pipeline Health** | All dependency manifests scanned with zero deprecation warnings |
+          report = []
+          report.append('## 🤖 Renovate Bot Dependency Scan Results\n')
 
-          > ℹ️ *To trigger an on-demand update or review detected releases, open the [Dependency Dashboard](https://github.com/${{ github.repository }}/issues/3).*"
+          try:
+              prs_json = subprocess.check_output(['gh', 'pr', 'list', '--json', 'number,title,url,headRefName'], env=os.environ).decode('utf-8')
+              prs = json.loads(prs_json)
+          except Exception as e:
+              prs = []
 
-          # 1. Workflow Command Notice
-          echo "::notice title=Renovate Scan Completed::Automated dependency lifecycle scan evaluated Docker Compose, OpenTofu, and GitHub Actions dependencies."
+          if prs:
+              report.append(f'### 📦 Active & Newly Generated Pull Requests ({len(prs)})\n')
+              report.append('| PR # | Title | Target Branch | Link |')
+              report.append('| :---: | :--- | :--- | :--- |')
+              for pr in prs:
+                  report.append(f'| **#{pr[\"number\"]}** | {pr[\"title\"]} | \`{pr[\"headRefName\"]}\` | [View PR #{pr[\"number\"]}]({pr[\"url\"]}) |')
+              notice_msg = f'Renovate generated/updated {len(prs)} Pull Requests ready for review.'
+          else:
+              report.append('### 📦 Pull Requests\n')
+              report.append('✅ **All dependencies are currently up-to-date.** Zero pending Pull Requests.\n')
+              notice_msg = 'Renovate scan completed: All dependencies are up to date.'
 
-          # 2. Console STDOUT Output
-          echo "================================================================================"
-          echo "📊 RENOVATE BOT SCAN REPORT"
-          echo "================================================================================"
-          echo -e "$REPORT"
-          echo "================================================================================"
+          report.append('\n### 📋 Interactive Control Panel')
+          report.append('- **Dependency Dashboard:** [Issue #3](https://github.com/' + os.environ.get('GITHUB_REPOSITORY', '') + '/issues/3) *(Click checkboxes in this issue to force immediate updates)*')
+          report.append('- **All Pull Requests:** [View PR List](https://github.com/' + os.environ.get('GITHUB_REPOSITORY', '') + '/pulls)\n')
 
-          # 3. Publish to GitHub Actions Step Summary
-          echo -e "$REPORT" > "$GITHUB_STEP_SUMMARY"
+          full_report = '\n'.join(report)
+
+          print(f'::notice title=Renovate Scan Results::{notice_msg}')
+          print('=' * 80)
+          print('📊 RENOVATE BOT DYNAMIC RUNTIME REPORT')
+          print('=' * 80)
+          print(full_report)
+          print('=' * 80)
+
+          summary_path = os.environ.get('GITHUB_STEP_SUMMARY')
+          if summary_path:
+              with open(summary_path, 'a', encoding='utf-8') as f:
+                  f.write(full_report + '\n')
+          "
