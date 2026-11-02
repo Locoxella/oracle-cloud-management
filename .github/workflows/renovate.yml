@@ -32,7 +32,7 @@ jobs:
         id: app-token
         uses: actions/create-github-app-token@v3.3.0
         with:
-          app-id: ${{ secrets.APPLICATION_ID }}
+          client-id: ${{ secrets.APPLICATION_ID }}
           private-key: ${{ secrets.APPLICATION_PRIVATE_KEY }}
 
       - name: Run Renovate Bot
